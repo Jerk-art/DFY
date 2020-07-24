@@ -1,0 +1,75 @@
+body{
+	margin: 0;
+	padding: 0;
+}
+div, p, form, input, a, span, button {
+	box-sizing: border-box;
+}
+h2, h3 {
+	padding: 0;
+	margin: 0;
+}
+a, a:hover, a:active {
+	text-decoration: none;
+}
+ul, li{
+	display: block;
+}
+
+/* Header */
+header .navbar{
+	padding-top: 12px;
+	padding-bottom: 10px;
+}
+
+header .btn-outline-light {
+	padding: 6px;
+	border-radius: 8px;
+	width: 80px;
+}
+
+.b-reg {
+	display: inline-block;
+	margin-right: 8px;
+}
+/* Header end */
+
+/* Download section */
+.download{
+	padding-top: 35px;
+	padding-bottom: 30px;
+}
+
+.download h2{
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+.error{
+	margin-bottom: 0px;
+}
+
+.progress_yt{
+	margin-bottom: 0px;
+}
+
+label .error{
+	margin-top: 0px;
+	margin-bottom: 0px;
+	font-size: 0.95rem;
+	height: 25px;
+}
+
+.form_input{
+	margin-top: 0px;
+}
+
+.ytErrorLabelContainer{
+	height: 25px;
+}
+
+.ytLabelContainer{
+	margin: 1px;
+	height: 25px;
+	display: block;
+}
