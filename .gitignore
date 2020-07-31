@@ -1,6 +1,7 @@
 app.db
 venv
+config.py
 /app/tasks/temp/
 /temp
 /System Volume Information
-config.py
+/migrations

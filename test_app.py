@@ -1,10 +1,14 @@
 import pytest
+import os
+import shutil
+import time
 
 from app import create_app, db
 from app.models import Task
 from app.tasks import BadUrlError
 from app.tasks import get_yt_file_info
 from app.tasks import get_sc_file_info
+from app.tasks import download
 from config import Config
 
 
@@ -92,10 +96,62 @@ def test_get_sc_file_info_with_bad_id(client):
         get_sc_file_info('https://soundcloud.com/bluestahli/sets/lakes-of-flame-comaduste')
 
 
-# Testing is_allowed_duration
+# Testing download
 
-def test_is_allowed_duration_with_common_video(client):
-    info = get_sc_file_info("https://soundcloud.com/elinacooper/"
-                            "bring-me-the-horizon-nihilist-bluescover-by-the-veer-union")
-    assert info['resource'] == 'sc'
-    assert info['type'] == 0
+def test_download_from_yt(client):
+    def concatenate_elements(list_):
+        res = str()
+        for i in range(len(list_) - 1):
+            res += list_[i]
+            res += '.'
+        return res
+
+    t = Task(description="Downloading mp3", user_ip='None', status_code=0, progress='Waiting')
+    db.session.add(t)
+    db.session.commit()
+    try:
+        os.mkdir('temp')
+    except FileExistsError:
+        pass
+    filename = download('https://www.youtube.com/watch?v=rTyKk53Wq3w', t, dir='./temp')
+    filename = os.path.dirname(filename) + os.path.sep + \
+               concatenate_elements(filename.split(os.sep)[-1].split('.')) + 'mp3'
+    assert t.progress == 'Converting'
+    assert os.path.isfile(filename) is True
+    try:
+        shutil.rmtree('./temp')
+    except FileNotFoundError:
+        pass
+
+
+def test_download_from_sc(client):
+    def concatenate_elements(list_):
+        res = str()
+        for i in range(len(list_) - 1):
+            res += list_[i]
+            res += '.'
+        return res
+
+    t = Task(description="Downloading mp3", user_ip='None', status_code=0, progress='Waiting')
+    db.session.add(t)
+    db.session.commit()
+    try:
+        os.mkdir('temp')
+    except FileExistsError:
+        pass
+    filename = download('https://soundcloud.com/elinacooper/'
+                        'bring-me-the-horizon-nihilist-bluescover-by-the-veer-union', t, dir='./temp')
+    filename = os.path.dirname(filename) + os.path.sep + \
+               concatenate_elements(filename.split(os.sep)[-1].split('.')) + 'mp3'
+    assert t.progress == 'Converting'
+    assert os.path.isfile(filename) is True
+    try:
+        shutil.rmtree('./temp')
+    except FileNotFoundError:
+        pass
+
+
+try:
+    shutil.rmtree('./temp')
+except FileNotFoundError:
+    pass
