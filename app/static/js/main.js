@@ -1,12 +1,29 @@
 // window.addEventListener("load", function(){
-// 	alert('loaded')
+// 	alert('loaded');
 // });
 
 $(document).ready(function(){
 	$('.carousel').carousel({
 		interval: false,
 	})
-	$("#progress_yt").css("display", "none")
+	$("#progress_yt").css("display", "none");
+	$("#progress_sc").css("display", "none");
+
+	$.validator.addMethod(
+		"ytLinkCheck",
+		function(value, element) {
+			return value.startsWith("https://www.youtube.com/watch?v");
+		},
+		"URL should lead to the video on youtube.com."
+	);
+
+	$.validator.addMethod(
+		"scLinkCheck",
+		function(value, element) {
+			return value.startsWith("https://soundcloud.com/");
+		},
+		"URL should lead to the file on soundcloud.com."
+	);
 
 	$.validator.addMethod(
 		"ytCorrectnessCheck",
@@ -21,21 +38,29 @@ $(document).ready(function(){
 	);
 
 	$.validator.addMethod(
-		"checkYtLink",
+		"scCorrectnessCheck",
 		function(value, element) {
-			return value.startsWith("https://www.youtube.com/watch?v");
+			var splittedStr = value.slice(8, ).split("/");
+			if (splittedStr.length == 3 && splittedStr[2] != "sets"){
+				return true;
+			}else if(splittedStr.length == 4 && splittedStr[2] == "sets"){
+				return true;
+			}
+			else{
+				return false;
+			}
 		},
-		"URL should lead to video."
+		"Please check link for correctness."
 	);
 
-	$("#dfy").validate({
+	$("#dfyt").validate({
 		errorLabelContainer: "#ytErrorLabelContainer",
 		errorClass: "error",
 	  rules: {
 			link: {
 				required: true,
 				url: true,
-				checkYtLink: true,
+				ytLinkCheck: true,
 				ytCorrectnessCheck: true
 			}
 		},
@@ -63,6 +88,52 @@ $(document).ready(function(){
 							console.log("Stopping status checker");
 							$("#progress_yt").css("display", "none");
 							$("#BtnSubmit1").prop("disabled", false);
+							$("#carousel-control1").prop("disabled", false);
+							$("#carousel-control2").prop("disabled", false);
+							clearInterval(interval);
+						}
+          }
+				);
+      }, 2000);
+			return true
+		}
+	});
+
+	$("#dfsc").validate({
+		errorLabelContainer: "#scErrorLabelContainer",
+		errorClass: "error",
+	  rules: {
+			link: {
+				required: true,
+				url: true,
+				scLinkCheck: true,
+				scCorrectnessCheck: true
+			}
+		},
+		messages: {
+			link: {
+				required: "Please enter URL."
+			}
+		},
+		submitHandler: function(form) {
+			$("#BtnSubmit2").prop("disabled", true);
+			$("#carousel-control1").prop("disabled", true);
+			$("#carousel-control2").prop("disabled", true);
+			$("#progress_sc").css("display", "block");
+			$("#progress_sc").html("Downloading");
+
+			var interval;
+			interval = setInterval(function() {
+        $.ajax('/get_progress').done(
+          function(response) {
+						console.log(response);
+						if (response["Status_code"] == 0){
+							$("#progress_sc").html(response["Progress"]);
+						}
+						else{
+							console.log("Stopping status checker");
+							$("#progress_sc").css("display", "none");
+							$("#BtnSubmit2").prop("disabled", false);
 							$("#carousel-control1").prop("disabled", false);
 							$("#carousel-control2").prop("disabled", false);
 							clearInterval(interval);

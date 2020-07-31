@@ -17,7 +17,7 @@
 	<header class="header" id="header">
 		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 			<div class="container">
-				<a class="navbar-brand" href="#">DFY</a>
+				<a class="navbar-brand" href="{{ url_for('main.index') }}">DFY</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse"
 				 data-target="#contanctmain" aria-controls="contanctmain" aria-expanded="false"
 				 aria-label="Toggle navigation">
@@ -25,10 +25,10 @@
 				</button>
 				<div class="collapse navbar-collapse" id="contanctmain">
 					<ul class="navbar-nav mr-auto">
-						<li class="nav-item"><a class="nav-link active" href="#">Navigation item</a></li>
+						<li class="nav-item"><a class="nav-link active" href="/emma">Navigation item</a></li>
 					</ul>
-					<button class="btn btn-outline-light b-reg" type="">Login</button>
-					<button class="btn btn-outline-light" type="">Register</button>
+					<button class="btn btn-outline-light b-reg" type="">Sign in</button>
+					<button class="btn btn-outline-light" type="">Sign up</button>
 				</div>
 			</div>
 		</nav>

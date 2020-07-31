@@ -45,19 +45,19 @@ header .btn-outline-light {
 	padding-bottom: 20px;
 }
 
+label .error{
+	margin-top: 0px;
+	margin-bottom: 0px;
+	font-size: 0.95rem;
+	height: 25px;
+}
+
 .error{
 	margin-bottom: 0px;
 }
 
 .progress_yt{
 	margin-bottom: 0px;
-}
-
-label .error{
-	margin-top: 0px;
-	margin-bottom: 0px;
-	font-size: 0.95rem;
-	height: 25px;
 }
 
 .form_input{
@@ -72,4 +72,43 @@ label .error{
 	margin: 1px;
 	height: 25px;
 	display: block;
+}
+
+.progress_sc{
+	margin-bottom: 0px;
+}
+
+.form_input{
+	margin-top: 0px;
+}
+
+.scErrorLabelContainer{
+	height: 25px;
+}
+
+.scLabelContainer{
+	margin: 1px;
+	height: 25px;
+	display: block;
+}
+
+/* Error pages */
+
+.error_section{
+	padding-top: 80px;
+	text-align: center;
+}
+
+.error_section h1{
+	color: #ca3b07;
+}
+
+.error_section h4{
+	color: #ca3b07;
+	padding-bottom: 20px;
+	padding-bottom: 20px;
+}
+
+.error_section p{
+	color: #1558c3;
 }

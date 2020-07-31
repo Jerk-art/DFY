@@ -1,1 +1,6 @@
-dfy.py
+app.db
+venv
+/app/tasks/temp/
+/temp
+/System Volume Information
+config.py

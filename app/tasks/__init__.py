@@ -1,7 +1,8 @@
-from app import app, db
+from app import db
 from app.models import Task
 from app.models import TaskError
 from flask import send_from_directory
+from flask import current_app
 from requests import get
 import youtube_dl
 import os
@@ -11,14 +12,15 @@ class BadUrlError(Exception):
     pass
 
 
-def get_yt_video_info(url: str):
+def get_yt_file_info(url: str):
     """Request info about youtube video, using google API key specified in config
 
 
     :param url: URL to youtube video
     :type url: str
 
-    :returns: deserialized json answer from youtube API
+    :returns: dict with value "yt" assigned to key "resource"
+              and deserialized json answer from youtube API assigned to key "API_response"
     :rtype: dict
     """
 
@@ -26,10 +28,9 @@ def get_yt_video_info(url: str):
         vid = url[32:43]
     else:
         raise BadUrlError('Url do not belong domain yputube.com or does not lead to video.')
-    r = get(f'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&key={app.config["YOUTUBE_API_KEY"]}'
+    r = get(f'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&key={current_app.config["YOUTUBE_API_KEY"]}'
             f'&id={vid}')
-    # print(r.status_code)
-    # print(r.json())
+
     if r.status_code == 200 and r.json()['kind'] and r.json()['items']:
         try:
             kind = r.json()['kind']
@@ -40,13 +41,47 @@ def get_yt_video_info(url: str):
                 raise BadUrlError('No information about this video.')
         except KeyError:
             raise BadUrlError('No information about this video.')
-        return r.json()
+        return {"resource": "yt", "API_response": r.json()}
     elif r.status_code == 200:
         raise BadUrlError('No information about this video.')
     elif r.status_code == 400:
         raise ConnectionError('Bad request, please check your API key.')
     else:
         raise ConnectionError()
+
+
+def get_sc_file_info(url: str):
+    """Request info about soundcloud file, using soundcloud module with API key specified in config
+
+
+    :param url: URL to soundcloud file
+    :type url: str
+
+    :returns: dict with value "sc" assigned to key "resource"
+              0 or 1 assigned to key "type" (0 - single file, 1 - playlist item)
+              and url assigned to key "url"
+    :rtype: dict
+    """
+
+    if url.startswith('https://soundcloud.com/'):
+        url_splitted = url[8:].split("/")
+        url_length = len(url_splitted)
+        if url_length == 3 and url_splitted[2] != 'sets':
+            r = get(url)
+            if r.status_code == 404:
+                raise BadUrlError('Audio not found.')
+            res = {'type': 0, 'url': url}
+        elif url_length == 4 and url_splitted[2] == 'sets':
+            r = get(url)
+            if r.status_code == 404:
+                raise BadUrlError('Audio not found.')
+            res = {'type': 1, 'url': url}
+        else:
+            raise BadUrlError('Url does not lead to audio.')
+    else:
+        raise BadUrlError('Url do not belong domain soundcloud.com.')
+    res['resource'] = "sc"
+    return res
 
 
 def is_allowed_duration(info: dict):
@@ -59,37 +94,82 @@ def is_allowed_duration(info: dict):
     :returns: True or False
     :rtype: bool
     """
-
-    try:
-        duration = info['items'][0]['contentDetails']['duration']
-        if duration.find('H') == -1:
-            m_index = duration.find('M')
-            if m_index == -1:
-                return True
+    if info["resource"] == "yt":
+        info = info["API_response"]
+        try:
+            duration = info['items'][0]['contentDetails']['duration']
+            if duration.find('H') == -1:
+                m_index = duration.find('M')
+                if m_index == -1:
+                    return True
+                else:
+                    if int(duration[2:m_index]) <= current_app.config["ALLOWED_DURATION"]:
+                        return True
+                    else:
+                        return False
             else:
-                if int(duration[2:m_index]) <= app.config["ALLOWED_DURATION"]:
+                return False
+        except Exception as err:
+            raise BadUrlError(f"Info is not processed:{info}\nReason:{err}")
+
+    elif info['resource'] == "sc":
+        try:
+            class Logger:
+                def debug(self, msg):
+                    pass
+
+                def info(self, msg):
+                    pass
+
+                @staticmethod
+                def error(msg):
+                    print(msg)
+
+            ydl_opts = {'logger': Logger()}
+
+            if info['type'] == 0:
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+
+                    meta = ydl.extract_info(
+                        info['url'],
+                        download=False)
+                    duration = meta['duration']
+
+                if duration <= current_app.config["ALLOWED_DURATION"] * 60:
                     return True
                 else:
                     return False
-        else:
-            return False
-    except Exception as err:
-        raise BadUrlError(f"Info is not processed:{info}\nReason:{err}")
+
+            elif info['type'] == 1:
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+
+                    meta = ydl.extract_info(
+                        info['url'],
+                        download=False)
+                    duration = meta["entries"][0]["duration"]
+
+                if duration <= current_app.config["ALLOWED_DURATION"] * 60:
+                    return True
+                else:
+                    return False
+        except Exception as err:
+            raise BadUrlError(f"Info is not processed:{info}\nReason:{err}")
 
 
-def download(link: str, ip: str, dir=None):
+def download(link: str, t: Task, dir=None):
     """Download file and convert to mp3 using youtube-dl API
 
 
     :param link: link to youtube or soundcloud file
     :type link: str
-    :param ip: ip of the user who started downloading
-    :type ip: str
     :param dir: path to directory where should be downloaded file,
                 if not specified or None, using temp directory in where placed this .py file
     :type dir: str
-    :returns: path to downloaded file, task object
-    :rtype: tuple with string and Task object
+    :param t: task object
+    :type t: Task
+
+    :returns: path to downloaded file
+    :rtype: str
     """
 
     dir = dir or os.path.dirname(os.path.realpath(__file__)) + os.path.sep + 'temp'
@@ -134,15 +214,12 @@ def download(link: str, ip: str, dir=None):
     }
 
     print('Downloading')
-    t = Task.query.filter_by(user_ip=ip, status_code=0).first()
-    if not t:
-        raise TaskError('No such task in database')
     t.progress = 'Downloading'
     db.session.add(t)
     db.session.commit()
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download([link])
-    return filename, t
+    return filename
 
 
 def get_download_response(filename: str, t: Task):
@@ -172,7 +249,6 @@ def get_download_response(filename: str, t: Task):
                                as_attachment=True)
 
 
-# if __name__ == '__main__':
-#     info = get_yt_video_info('https://www.youtube.com/watch?v=6_qbEsfJ4_8&list=PLk_klgt4LMVdcHAKqQ93bKtQ_r2YgsxlP&index=2')
-#     print(is_allowed_duration(info))
-#     pass
+if __name__ == "__main__":
+    with youtube_dl.YoutubeDL() as ydl:
+        ydl.download(["https://www.youtube.com/watch?v=4XisH8tgEcM"])
