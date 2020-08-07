@@ -30,6 +30,8 @@ def get_yt_file_info(url: str):
 
     if url.startswith('https://www.youtube.com/watch?v='):
         vid = url[32:43]
+    elif url.startswith('https://youtu.be/'):
+        vid = url[17:28]
     else:
         raise BadUrlError('Url do not belong domain yputube.com or does not lead to video.')
     r = get(f'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&key={current_app.config["YOUTUBE_API_KEY"]}'

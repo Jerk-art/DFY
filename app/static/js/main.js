@@ -12,7 +12,7 @@ $(document).ready(function(){
 	$.validator.addMethod(
 		"ytLinkCheck",
 		function(value, element) {
-			return value.startsWith("https://www.youtube.com/watch?v");
+			return value.startsWith("https://www.youtube.com/watch?v") || value.startsWith("https://youtu.be/");
 		},
 		"URL should lead to the video on youtube.com."
 	);
@@ -28,10 +28,19 @@ $(document).ready(function(){
 	$.validator.addMethod(
 		"ytCorrectnessCheck",
 		function(value, element) {
-			if (value.length < 43){
-				return false;
-			}else{
-				return true;
+			if (value.startsWith("https://www.youtube.com/watch?v")){
+				if (value.length < 43){
+					return false;
+				}else{
+					return true;
+				}
+			}
+			if (value.startsWith("https://youtu.be/")){
+				if (value.length < 28){
+					return false;
+				}else{
+					return true;
+				}
 			}
 		},
 		"Please check link for correctness."
@@ -81,7 +90,7 @@ $(document).ready(function(){
 			$("#carousel-control1").prop("disabled", true);
 			$("#carousel-control2").prop("disabled", true);
 			$("#progress_yt").css("display", "block");
-			$("#progress_yt").html("Downloading");
+			$("#progress_yt").html("Checking url");
 
 			var interval;
 			interval = setInterval(function() {

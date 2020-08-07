@@ -44,7 +44,10 @@ def download_yt():
         db.session.add(t)
         db.session.commit()
         try:
-            file = download(youtube_form.link.data[:43], t)
+            if youtube_form.link.data.startswith('https://www.youtube.com/watch?v='):
+                file = download(youtube_form.link.data[:43], t)
+            else:
+                file = download(youtube_form.link.data[:28], t)
         except DownloadError as err:
             t.force_stop('Download error')
             raise err

@@ -19,6 +19,14 @@ def content_check(form, field):
         if not is_allowed_duration(info):
             raise ValidationError(f'Video/music file must be shorter '
                                   f'than {current_app.config["ALLOWED_DURATION"]} minutes.')
+    elif field.data.startswith('https://youtu.be/'):
+        try:
+            info = get_yt_file_info(field.data)
+        except BadUrlError:
+            raise ValidationError(f'Please check the link for correctness.')
+        if not is_allowed_duration(info):
+            raise ValidationError(f'Video/music file must be shorter '
+                                  f'than {current_app.config["ALLOWED_DURATION"]} minutes.')
     elif field.data.startswith('https://soundcloud.com/'):
         try:
             info = get_sc_file_info(field.data)
