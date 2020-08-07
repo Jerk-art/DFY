@@ -252,6 +252,7 @@ $(document).ready(function(){
 			email: {
 				required: true,
 				email: true
+			}
 		},
 		messages: {
 			email: {
