@@ -25,10 +25,20 @@
 				</button>
 				<div class="collapse navbar-collapse" id="contanctmain">
 					<ul class="navbar-nav mr-auto">
-						<li class="nav-item"><a class="nav-link active" href="/emma">Navigation item</a></li>
+						<li class="nav-item"><a class="nav-link active" href="{{ url_for('main.index') }}">Main Page</a></li>
 					</ul>
-					<button class="btn btn-outline-light b-reg" type="">Sign in</button>
-					<button class="btn btn-outline-light" type="">Sign up</button>
+					{% if current_user.is_authenticated %}
+						<div class="dropdown" style="float:right;">
+						  <button class="btn btn-outline-light dropbtn">User</button>
+						  <div class="dropdown-content">
+								<a class="btn btn-outline-light" href="{{ url_for('auth.request_password_change') }}">Change Password</a>
+						    <a class="btn btn-outline-light" href="{{ url_for('auth.logout') }}">Sign Out</a>
+						  </div>
+						</div>
+					{% else %}
+						<a class="btn btn-outline-light b-reg" type="" href="{{ url_for('auth.sign_in') }}">Sign In</a>
+						<a class="btn btn-outline-light" type="" href="{{ url_for('auth.sign_up') }}">Sign Up</a>
+					{% endif %}
 				</div>
 			</div>
 		</nav>

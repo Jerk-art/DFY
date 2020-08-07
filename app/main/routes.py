@@ -9,7 +9,6 @@ from flask import redirect
 from flask import request
 from flask import flash
 from flask import url_for
-from flask import make_response
 from flask import jsonify
 from youtube_dl import DownloadError
 

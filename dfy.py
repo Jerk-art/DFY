@@ -1,5 +1,6 @@
 from app import create_app, db
 from app.models import Task
+from app.models import User
 from sqlalchemy.exc import OperationalError
 
 app = create_app()
@@ -12,4 +13,4 @@ except OperationalError:
 
 @app.shell_context_processor
 def make_shell_context():
-    return {'db': db, 'Task': Task}
+    return {'db': db, 'Task': Task, 'User': User}

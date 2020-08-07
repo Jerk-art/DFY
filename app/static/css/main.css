@@ -16,6 +16,14 @@ ul, li{
 	display: block;
 }
 
+a{
+	color: #0056b3;
+}
+
+.text-align-center{
+	text-align: center;
+}
+
 /* Header */
 header .navbar{
 	padding-top: 12px;
@@ -24,13 +32,50 @@ header .navbar{
 
 header .btn-outline-light {
 	padding: 6px;
-	border-radius: 8px;
+	border-radius: 1px;
 	width: 80px;
 }
 
 .b-reg {
 	display: inline-block;
 	margin-right: 8px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+	position: absolute;
+	right: 0px;
+  background-color: white;
+	box-shadow: 0px 6px 8px 0px rgba(0,0,0,0.2);
+  width: 100px;
+	z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+	border: 1px solid white;
+	border-radius: 1px;
+	width: 100px;
+  text-decoration: none;
+  display: block;
+}
+
+header .dropbtn{
+	border-radius: 1px;
+	width: 100px;
+}
+
+.dropdown-content a:hover {background-color: #ffc2c2;}
+.dropdown:hover .dropdown-content {display: block;}
+.dropdown:hover .dropbtn {
+	background-color: white;
+	color: black;
+	border-bottom: 1px solid black;
 }
 /* Header end */
 
@@ -111,4 +156,71 @@ label .error{
 
 .error_section p{
 	color: #1558c3;
+}
+
+/* Auth pages */
+
+.auth_form{
+	padding-top: 36px;
+}
+
+.auth_form .form_label{
+	margin-top: 6px;
+	margin-bottom: 2px;
+}
+
+.auth_form .form_label label{
+	margin: 0px;
+}
+
+.auth_button{
+	margin-top: 18px;
+	color: black;
+	border-color: black;
+}
+
+.auth_button:hover{
+	color: white;
+	background: black;
+	border-color: black;
+}
+
+.usernameErrorContainer{
+	margin-top: 36px;
+}
+
+.emailErrorContainer{
+	margin-top: 36px;
+}
+
+.passwordErrorContainer{
+	margin-top: 36px;
+}
+
+.repeatPasswordErrorContainer{
+	margin-top: 36px;
+}
+
+.flashed-text{
+	font-size: 19px;
+	height: 22px;
+	color: #ca3b07;
+	text-align: center;
+}
+
+.flashed-text-add{
+	text-align: center;
+}
+
+.info-section{
+	padding-top: 80px;
+}
+
+.remember_me{
+	margin-top: 20px;
+}
+
+.forgot-password{
+	text-align: center;
+	margin-top: 18px;
 }

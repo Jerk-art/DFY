@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8 offset-sm-4">
+          <form action="" class="auth_form" id="signInForm" method="post" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+
+              <div class="row">
+                <div class="col-sm-6 flashed-text">
+                  {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                      {{ messages[0] }}
+                    {% endif %}
+                  {% endwith %}
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-sm-6 form_input">
+                  <div class="form_label">
+                    {{ form.username.label }}
+                  </div>
+                    {{ form.username(class_="form-control") }}
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="usernameErrorContainer" id="usernameErrorContainer">
+                    <label id="username-error" class="error" for="username">
+                      {% if form.username.errors[0] %}
+                        <-- {{ form.username.errors[0] }}
+                      {% endif %}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-sm-6 form_input">
+                  <div class="form_label">
+                    {{ form.password.label }}
+                  </div>
+                    {{ form.password(class_="form-control") }}
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="passwordErrorContainer" id="passwordErrorContainer">
+                    <label id="password-error" class="error" for="password">
+                      {% if form.password.errors[0] %}
+                        <-- {{ form.password.errors[0] }}
+                      {% endif %}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="row">
+                  <div class="col-sm-8 form_input">
+                    <div class="form_label">
+                      {{ form.remember_me(class_="remember_me") }}
+                      {{ form.remember_me.label }}
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    {{ form.submit(class_="btn btn-outline-light auth_button", type="submit", value="Sign In", id="BtnSubmit") }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-sm-6 forgot-password">
+                  <a href="{{ url_for('auth.request_password_change') }}">Forgot your password?</a>
+                </div>
+              </div>
+
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock content %}

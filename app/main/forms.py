@@ -17,16 +17,18 @@ def content_check(form, field):
         except BadUrlError:
             raise ValidationError(f'Please check the link for correctness.')
         if not is_allowed_duration(info):
-            raise ValidationError(f'Video/music file must be shorter than {current_app.config["ALLOWED_DURATION"]} minutes.')
+            raise ValidationError(f'Video/music file must be shorter '
+                                  f'than {current_app.config["ALLOWED_DURATION"]} minutes.')
     elif field.data.startswith('https://soundcloud.com/'):
         try:
             info = get_sc_file_info(field.data)
         except BadUrlError:
             raise ValidationError(f'Please check the link for correctness.')
         if not is_allowed_duration(info):
-            raise ValidationError(f'Video/music file must be shorter than {current_app.config["ALLOWED_DURATION"]} minutes.')
+            raise ValidationError(f'Video/music file must be shorter '
+                                  f'than {current_app.config["ALLOWED_DURATION"]} minutes.')
 
 
 class DownloadForm(FlaskForm):
     link = URLField(validators=[DataRequired(), url(), content_check])
-    submit = SubmitField('submit')
+    submit = SubmitField('Download')

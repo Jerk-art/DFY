@@ -1,9 +1,13 @@
 from app import db
+from app import mail
 from app.models import Task
-from app.models import TaskError
 from flask import send_from_directory
 from flask import current_app
+from flask import render_template
+from flask_mail import Message
 from requests import get
+from threading import Thread
+
 import youtube_dl
 import os
 
@@ -249,6 +253,27 @@ def get_download_response(filename: str, t: Task):
                                as_attachment=True)
 
 
-if __name__ == "__main__":
-    with youtube_dl.YoutubeDL() as ydl:
-        ydl.download(["https://www.youtube.com/watch?v=4XisH8tgEcM"])
+def send_mail_async(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    if current_app.config['ASYNC_TASKS']:
+        Thread(target=send_mail_async, args=(current_app._get_current_object(), msg)).start()
+    else:
+        mail.send(msg)
+
+
+def send_confirmation_email(user, action, pattern):
+    token = user.get_confirmation_token()
+    send_email(f'[DFY] {action}',
+               sender=current_app.config['ADMINS'][0],
+               recipients=[user.email],
+               text_body=render_template(pattern + '.txt',
+                                         user=user, token=token),
+               html_body=render_template(pattern + '.html',
+                                         user=user, token=token))

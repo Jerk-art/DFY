@@ -53,6 +53,13 @@ $(document).ready(function(){
 		"Please check link for correctness."
 	);
 
+	$.validator.addMethod(
+		"usernameCheck",
+		function(value, element) {
+			return !value.includes("@");
+		}
+	);
+
 	$("#dfyt").validate({
 		errorLabelContainer: "#ytErrorLabelContainer",
 		errorClass: "error",
@@ -142,6 +149,115 @@ $(document).ready(function(){
 				);
       }, 2000);
 			return true
+		}
+	});
+
+	$("#signUpForm").validate({
+		errorClass: "error",
+	  rules: {
+			username: {
+				required: true,
+				minlength: 4,
+				usernameCheck: true,
+				maxlength: 32
+			},
+			email: {
+				required: true,
+				email: true
+			},
+			password: {
+				minlength : 8,
+				required: true
+			},
+			repeat_password: {
+				equalTo : "#password"
+			}
+		},
+		messages: {
+			username: {
+				required: "<-- This field is required.",
+				minlength: "<-- Username must be at least 4 symbols long.",
+				usernameCheck: "<-- Username should not contain \"@\", please use a different username.",
+				maxlength: "<-- Username must be less than 32 symbols."
+			},
+			email: {
+				email: "<-- Enter a valid email address.",
+				required: "<-- This field is required."
+			},
+			password: {
+				required: "<-- This field is required.",
+				minlength: "<-- Password must be at least 8 symbols long."
+			},
+			repeat_password: {
+				required: "<-- This field is required.",
+				equalTo: "<-- This field should match password."
+			}
+		}
+	});
+
+	$("#signInForm").validate({
+		errorClass: "error",
+	  rules: {
+			username: {
+				required: true,
+				minlength: 4,
+				usernameCheck: true,
+				maxlength: 32
+			},
+			password: {
+				minlength : 8,
+				required: true
+			}
+		},
+		messages: {
+			username: {
+				required: "<-- This field is required.",
+				minlength: "<-- Username must be at least 4 symbols long.",
+				usernameCheck: "<-- Username should not contain \"@\", please use a different username.",
+				maxlength: "<-- Username must be less than 32 symbols."
+			},
+			password: {
+				required: "<-- This field is required.",
+				minlength: "<-- Password must be at least 8 symbols long."
+			}
+		}
+	});
+
+	$("#changePasswordForm").validate({
+		errorClass: "error",
+		rules: {
+			password: {
+				minlength : 8,
+				required: true
+			},
+			repeat_password: {
+				equalTo : "#password"
+			}
+		},
+		messages: {
+			password: {
+				required: "<-- This field is required.",
+				minlength: "<-- Password must be at least 8 symbols long."
+			},
+			repeat_password: {
+				required: "<-- This field is required.",
+				equalTo: "<-- This field should match password."
+			}
+		}
+	});
+
+	$("#requestPasswordChangeForm").validate({
+		errorClass: "error",
+		rules: {
+			email: {
+				required: true,
+				email: true
+		},
+		messages: {
+			email: {
+				email: "<-- Enter a valid email address.",
+				required: "<-- This field is required."
+			}
 		}
 	});
 });
