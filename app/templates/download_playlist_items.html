@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<section>
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-10 offset-sm-1">
+					<form action="" class="download_playlist_form" id="DownloadPlaylistForm" method="post" enctype="multipart/form-data" novalidate>
+						{{ form.hidden_tag() }}
+						<div class="form-group">
+
+							<div class="row">
+								<div class="col-sm-6 offset-sm-3 flashed-text">
+									{% with messages = get_flashed_messages() %}
+										{% if messages %}
+											<label id="link-error" class="error" for="link">{{ messages[0] }}</label>
+										{% else %}
+											<label id="link-error" class="error" for="link"></label>
+										{% endif %}
+									{% endwith %}
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-sm-6 offset-sm-3 form_input playlist_url">
+										{{ form.link(class_="form-control") }}
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-sm-6 offset-sm-3">
+									<div class="indexes bg-1">
+										{{ form.first_item_number.label(class_="index1-label") }}
+										{{ form.first_item_number(class_="index1", size=2) }}
+
+										{{ form.last_item_number(class_="index2", size=2) }}
+										{{ form.last_item_number.label(class_="index2-label") }}
+									</div>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-sm-6 offset-sm-3 settings">
+									<div class="bg-1">
+										<div class="col-sm-4 offset-sm-1 quality_chose_holder">
+												{{ form.quality.label }}
+												{{ form.quality(class_="quality_chose") }}
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-sm-6 offset-sm-3">
+								<div class="col-sm-4 offset-sm-4 download_playlist_button_holder">
+									{{ form.submit(class_="btn btn-outline-light download_playlist_button", type="submit", value="Download", id="BtnSubmit") }}
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</section>
+{% endblock content %}

@@ -80,6 +80,16 @@ header .dropbtn{
 /* Header end */
 
 /* Download section */
+
+.playlist_url{
+	padding-top: 18px;
+}
+
+.carousel-caption-authorized{
+	padding-bottom: 0px;
+	height: 533px;
+}
+
 .download{
 	padding-top: 35px;
 	padding-bottom: 30px;
@@ -135,6 +145,129 @@ label .error{
 	margin: 1px;
 	height: 25px;
 	display: block;
+}
+
+.quality_chose_holder{
+	height: 30px;
+	border: 0px;
+	border-radius: 8px;
+	background-color: black;
+	opacity: 0.6;
+}
+
+.quality_chose_holder:hover{
+	opacity: 0.9;
+}
+
+.quality_chose{
+	margin-top: 1px;
+	height: 28px;
+}
+
+.settings{
+	margin-top: 12px;
+}
+
+.settings label{
+	margin-bottom: 2px;
+}
+
+/* Download playlist items */
+
+.download_playlist_button{
+	margin-top: 18px;
+	color: black;
+	border-color: black;
+	width: 100%;
+}
+
+.download_playlist_button:hover{
+	color: white;
+	background: black;
+	border-color: black;
+}
+
+.download_playlist_form{
+	padding-top: 36px;
+}
+
+.download_playlist_form .form_label{
+	margin-top: 6px;
+	margin-bottom: 2px;
+}
+
+.download_playlist_form .form_label label{
+	margin: 0px;
+}
+
+.download_playlist_form .quality_chose_holder label{
+	color: white;
+}
+
+.indexes{
+	margin-top: 18px;
+}
+
+.index1-label{
+	margin-left: 39px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+.index2-label{
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+.index1{
+	text-align: center;
+}
+
+.index2{
+	text-align: center;
+	margin-left: 74px;
+}
+
+.bg-1{
+	border: 0px;
+	border-radius: 6px;
+	background-color: #e9f4fb;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.download_progress_bar_holder{
+	background-color: white;
+	height: 4px;
+	border-radius: 2px;
+}
+
+.download_progress_bar_item_holder{
+	background-color: white;
+}
+
+.download_progress_bar_item{
+	background-color: #8cccf5;
+	width: 2%;
+	margin-left: 1px;
+	margin-right: 1px;
+	height: 4px;
+	border-radius: 2px;
+}
+
+.progress_section{
+	padding-top: 76px;
+}
+
+.playlist_downloading_progress{
+	padding-top: 8px;
+	text-align: center;
+	font-size: 18px;
+}
+
+.download_playlist_button{
+	margin-top: 7px;
+	margin-bottom: 6px;
 }
 
 /* Error pages */

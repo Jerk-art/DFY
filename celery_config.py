@@ -2,9 +2,11 @@ from kombu import Queue
 
 
 class CeleryConfig:
-    TASK_DEFAULT_QUEUE = 'default'
-    TASKS_QUEUES = (Queue('default', routing_key='task.#'), Queue('downloading_tasks', routing_key='download.#'))
-    INCLUDE = [f'app.tasks']
-    TASK_DEFAULT_EXCHANGE = 'tasks'
-    TASK_DEFAULT_EXCHANGE_TYPE = 'topic'
-    TASK_DEFAULT_ROUTING_KEY = 'task.default'
+    result_backend = 'redis://localhost:6379'
+    broker_url = 'redis://localhost:6379'
+    task_default_queue = 'default'
+    task_queues = (Queue('default', routing_key='task.#'), Queue('downloading_tasks', routing_key='download.#'))
+    include = [f'app.tasks']
+    task_default_exchange = 'tasks'
+    task_default_exchange_type = 'topic'
+    task_default_routing_key = 'task.default'

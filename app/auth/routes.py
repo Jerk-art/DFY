@@ -72,8 +72,11 @@ def sign_in():
 
 @bp.route('/logout', methods=['GET'])
 def logout():
-    logout_user()
-    return redirect(url_for('main.index'))
+    if current_user.is_authenticated:
+        logout_user()
+        return redirect(url_for('main.index'))
+    else:
+        return redirect(url_for('main.index'))
 
 
 @bp.route('/confirm_user<token>', methods=['GET'])
@@ -100,7 +103,7 @@ def confirm_user(token):
 def request_password_change():
     if current_user.is_authenticated:
         if request.method == 'POST':
-            abort(404)
+            abort(400)
         else:
             send_confirmation_email(current_user, 'Change password.', 'emails/confirm_password_change')
 
@@ -138,7 +141,7 @@ def change_password(token):
         if user:
             if current_user.is_authenticated:
                 if user != current_user:
-                    abort(404)
+                    abort(400)
             if request.method == 'GET':
                 return render_template('auth/change_password.html', form=form)
             else:

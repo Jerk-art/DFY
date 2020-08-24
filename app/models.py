@@ -7,6 +7,9 @@ from werkzeug.security import check_password_hash
 from time import time
 from jwt import encode
 from jwt import decode
+from pickle import dump
+from pickle import load
+from os.path import sep
 
 
 class VerificationError(Exception):
@@ -14,16 +17,19 @@ class VerificationError(Exception):
 
 
 class Task(db.Model):
-    """Object which represent task on the application"""
+    """Object which represent task on the application
+
+    status_codes = {'running': 0, 'completed': 1, 'error': 2, 'running_long_term': 3, 'waiting_on_user': 4}
+    """
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(128), index=True)
     user_ip = db.Column(db.String(16), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     status_code = db.Column(db.Integer, index=True)
-    progress = db.Column(db.Integer)
-
-    status_codes = {'running': 0, 'completed': 1, 'error': 2}
+    progress = db.Column(db.String(128))
+    unique_process_info = db.Column(db.String(128))
+    files = db.relationship('FileInfo', backref='task', lazy='dynamic')
 
     def __repr__(self):
         return f'<Task {self.id}>'
@@ -82,7 +88,7 @@ class User(UserMixin, db.Model):
     @staticmethod
     def get_user_by_confirmation_token(token):
         try:
-            id = decode(token, current_app.config['SECRET_KEY'], algorithm='HS256')['value']
+            id = decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['value']
         except:
             raise VerificationError()
         return User.query.get(id)
@@ -91,3 +97,24 @@ class User(UserMixin, db.Model):
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+
+class FileInfo(db.Model):
+    """Playlist object
+
+    status_codes = {'not_processed': 0, 'processed': 1, 'procession_error': 2}
+    """
+
+    id = db.Column(db.Integer, primary_key=True)
+    index = db.Column(db.Integer)
+    file_id = db.Column(db.String(128), index=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), index=True)
+    status_code = db.Column(db.Integer, nullable=False, default=0)
+
+    @classmethod
+    def make_records(cls, list_, task_id):
+        i = 0
+        for record in list_:
+            db.session.add(cls(index=int(i), file_id=record, task_id=task_id))
+            i += 1
+        db.session.commit()

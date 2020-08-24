@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<section class="progress_section">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-6 offset-sm-3 bg-1">
+					<p class="playlist_downloading_progress" id="playlist_downloading_progress">...</p>
+					<div class="col-sm-4 offset-sm-4">
+						<a class="btn btn-outline-dark download_playlist_button" href="{{ url_for('main.get_file') }}" id="download_playlist_button" style="display: none;" disabled>Download</a>
+					</div>
+					<div class="col-sm-10 offset-sm-1">
+						<div class="download_progress_bar_holder row" id="download_progress_bar_holder"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+{% endblock content %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/progress_check.js') }}"></script>
+{% endblock scripts %}

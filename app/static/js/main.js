@@ -69,6 +69,48 @@ $(document).ready(function(){
 		}
 	);
 
+	$.validator.addMethod(
+		"itemsCheck",
+		function(value, element) {
+			var num1 = $("#first_item_number").val();
+			num1 = parseInt(num1);
+			num1 = Number.isInteger(num1)
+
+			var num2 = $("#last_item_number").val();
+			num2 = parseInt(num2);
+			num2 = Number.isInteger(num2)
+			return num1 && num2;
+		},
+		"Please enter both items numbers."
+	);
+
+	$.validator.addMethod(
+		"item1Check",
+		function(value, element) {
+			var num1 = $("#first_item_number").val();
+			num1 = parseInt(num1);
+			if (num1 >= 1){
+				return true;
+			}
+			return false;
+		},
+		"Bad first item number."
+	);
+
+	$.validator.addMethod(
+		"item2Check",
+		function(value, element) {
+			var num1 = $("#first_item_number").val();
+			num1 = parseInt(num1);
+
+			var num2 = $("#last_item_number").val();
+			num2 = parseInt(num2);
+
+			return num1 < num2;
+		},
+		"Bad last item number."
+	);
+
 	$("#dfyt").validate({
 		errorLabelContainer: "#ytErrorLabelContainer",
 		errorClass: "error",
@@ -267,6 +309,30 @@ $(document).ready(function(){
 			email: {
 				email: "<-- Enter a valid email address.",
 				required: "<-- This field is required."
+			}
+		}
+	});
+
+	$("#DownloadPlaylistForm").validate({
+		errorClass: "error",
+		rules: {
+			link: {
+				required: true,
+				url: true,
+				itemsCheck: true,
+				item1Check: true,
+				item2Check: true
+			},
+			first_item_number: {
+				required: false
+			},
+			last_item_number: {
+				required: false
+			}
+		},
+		messages: {
+			link: {
+				required: "Please enter URL."
 			}
 		}
 	});

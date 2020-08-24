@@ -4,6 +4,8 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from config import Config
+from celery import Celery
+from celery_config import CeleryConfig
 
 
 db = SQLAlchemy()
@@ -12,9 +14,17 @@ login_manager = LoginManager()
 mail = Mail()
 
 
+if Config.USE_CELERY:
+    celery = Celery(__name__)
+    celery.config_from_object(CeleryConfig)
+
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    if Config.USE_CELERY:
+        celery.conf.update(app.config)
 
     db.init_app(app)
     migrate.init_app(app, db)

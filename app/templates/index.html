@@ -13,7 +13,11 @@
 							<div class="carousel-item">
 							{% endif %}
 					      <img class="d-block w-100" src="{{ url_for('static', filename='img/slider.jpg') }}" alt="First slide">
-								<div class="carousel-caption d-none d-md-block">
+								{% if current_user.is_authenticated %}
+									<div class="carousel-caption carousel-caption-authorized d-none d-md-block">
+								{% else %}
+									<div class="carousel-caption d-none d-md-block">
+								{% endif %}
 									<img src="{{ url_for('static', filename='img/youtube.png') }}" width="360px">
 
 									<form action="download_yt" id="dfyt" method="post" enctype="multipart/form-data" novalidate>
@@ -22,6 +26,7 @@
 											<div class="col-sm-10 offset-sm-1 form_input">
 												{{ youtube_form.link(class_="form-control", placeholder="Enter link") }}
 											</div>
+
 											<div class="ytLabelContainer">
 												<div class="ytErrorLabelContainer" id="ytErrorLabelContainer">
 													{% with messages = get_flashed_messages(category_filter=["yt"]) %}
@@ -32,9 +37,22 @@
 												</div>
 												<p id="progress_yt", class="progress_yt"></p>
 											</div>
+
 											<div class="col-sm-4 offset-sm-4">
 												{{ youtube_form.submit(class_="btn btn-outline-light download_button", type="submit", value="Download", id="BtnSubmit1") }}
 											</div>
+
+											{% if current_user.is_authenticated %}
+												<div class="row">
+													<div class="col-sm-6 offset-sm-3 settings">
+														<div class="col-sm-6 quality_chose_holder">
+															{{ youtube_form.quality.label }}
+															{{ youtube_form.quality(class_="quality_chose") }}
+														</div>
+													</div>
+												</div>
+											{% endif %}
+
 										</div>
 									</form>
 
@@ -47,8 +65,12 @@
 							<div class="carousel-item">
 							{% endif %}
 					      <img class="d-block w-100" src="{{ url_for('static', filename='img/slider2.jpg') }}" alt="Second slide">
-								<div class="carousel-caption d-none d-md-block">
-									<img src="{{ url_for('static', filename='img/soundcloud.png') }}" width="280px" style="margin-bottom: 44px">
+								{% if current_user.is_authenticated %}
+									<div class="carousel-caption carousel-caption-authorized d-none d-md-block">
+								{% else %}
+									<div class="carousel-caption d-none d-md-block">
+								{% endif %}
+									<img src="{{ url_for('static', filename='img/soundcloud.png') }}" width="280px" style="margin-bottom: 40px; margin-top: 40px">
 
 									<form action="download_sc" id="dfsc" method="post" enctype="multipart/form-data" novalidate>
 										{{ soundcloud_form.hidden_tag() }}
@@ -56,6 +78,7 @@
 											<div class="col-sm-10 offset-sm-1 form_input">
 												{{ soundcloud_form.link(class_="form-control", placeholder="Enter link") }}
 											</div>
+
 											<div class="scLabelContainer">
 												<div class="scErrorLabelContainer" id="scErrorLabelContainer">
 													{% with messages = get_flashed_messages(category_filter=["sc"]) %}
@@ -66,9 +89,22 @@
 												</div>
 												<p id="progress_sc", class="progress_sc"></p>
 											</div>
+
 											<div class="col-sm-4 offset-sm-4">
 												{{ soundcloud_form.submit(class_="btn btn-outline-light download_button", type="submit", value="Download", id="BtnSubmit2") }}
 											</div>
+
+											{% if current_user.is_authenticated %}
+												<div class="row">
+													<div class="col-sm-6 offset-sm-3 settings">
+														<div class="col-sm-6 quality_chose_holder">
+															{{ soundcloud_form.quality.label }}
+															{{ soundcloud_form.quality(class_="quality_chose") }}
+														</div>
+													</div>
+												</div>
+											{% endif %}
+
 										</div>
 									</form>
 
