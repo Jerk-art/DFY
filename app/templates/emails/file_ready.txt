@@ -1,0 +1,5 @@
+Dear {{ user.username }},
+Your file is waiting on you! So click here:
+{{ url_for('main.download_playlist_items', _external=True) }}
+Sincerely,
+DFY
