@@ -46,6 +46,7 @@ class Task(db.Model):
 
         self.status_code = 1
         self.progress = progress
+        self.completed_at = datetime.now()
 
     @staticmethod
     def stop_tasks(status_code=0, prefix='', print_lock=None):
