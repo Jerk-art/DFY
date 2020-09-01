@@ -8,6 +8,7 @@ app.app_context().push()
 
 scheduler.register_tasks(tasks)
 scheduler.register_timers(timers)
-Process(target=scheduler.run, daemon=True).start()
 
-app.run()
+if __name__ == '__main__':
+    Process(target=scheduler.run, daemon=True).start()
+    app.run()
