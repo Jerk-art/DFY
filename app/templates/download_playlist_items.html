@@ -42,9 +42,20 @@
 							<div class="row">
 								<div class="col-sm-6 offset-sm-3 settings">
 									<div class="bg-1">
-										<div class="col-sm-4 offset-sm-1 quality_chose_holder">
-												{{ form.quality.label }}
-												{{ form.quality(class_="quality_chose") }}
+										<div class="row">
+											<div class="col-sm-4 offset-sm-1 chose_holder" id="chose_holder1">
+													{{ form.quality.label }}
+													{{ form.quality(class_="quality_chose") }}
+											</div>
+											<div class="col-sm-4 offset-sm-2 chose_holder repair_tags" id="chose_holder2">
+												<div class="row">
+													<div class="col-sm-9">
+													{{ form.repair_tags.label }}
+												</div>
+												<div class="col-sm-2">
+													{{ form.repair_tags(class_="repair_tags_checkbox") }}
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -62,3 +73,7 @@
 		</div>
 	</section>
 {% endblock content %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/hover_animation.js') }}"></script>
+{% endblock scripts %}

@@ -1,0 +1,6 @@
+Dear {{ user.username }},
+During downloading of your files happened EXTREMELY unexpected error.
+Please make another try:
+{{ url_for('main.download_playlist_items', _external=True) }}
+Sincerely,
+DFY

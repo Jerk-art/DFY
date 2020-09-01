@@ -1,25 +1,22 @@
+from app import db, create_app
+from app.models import User
+from app.tasks.info import *
+from app.tasks.download import download
+from app.tasks.download import download_yt_files_sync
+from app.tasks.tags import *
+from config import Config
+
 import pytest
 import os
 import shutil
 
-from app import create_app, db
-from app.models import User
-from app.tasks import BadUrlError
-from app.tasks import get_yt_file_info
-from app.tasks import get_sc_file_info
-from app.tasks import get_yt_playlist_info
-from app.tasks import get_yt_playlist_items
-from app.tasks import concatenate_elements
-from app.tasks import download
-from app.tasks import download_yt_files_sync
-from config import Config
-
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     USE_CELERY = False
+    SEND_MAILS = False
 
 
 app = create_app(TestConfig)
@@ -29,30 +26,6 @@ TEMP_DIR = f'.{os.path.sep}tests{os.path.sep}temp'
 
 @pytest.fixture
 def client():
-    with app.test_client() as client:
-        app_context = app.app_context()
-        app_context.push()
-        db.create_all()
-        u = User()
-        u.username = 'user'
-        u.email = 'user@example.com'
-        u.set_password_hash('12345678')
-        db.session.add(u)
-        db.session.commit()
-        yield client
-
-    db.session.remove()
-    db.drop_all()
-    app_context.pop()
-
-    try:
-        shutil.rmtree(TEMP_DIR)
-    except FileNotFoundError:
-        pass
-
-
-@pytest.fixture
-def client2():
     with app.test_client() as client:
         app_context = app.app_context()
         app_context.push()
@@ -160,10 +133,10 @@ def test_get_yt_playlist_items(client):
     playlist = get_yt_playlist_items('https://www.youtube.com/playlist?list=PL6Lt9p1lIRZ311J9ZHuzkR5A3xesae2pk', 69, 131)
     assert len(playlist) == 62
     assert playlist[0] == '8IEQpfA528M'
-    assert playlist[61] == 'EqkBRVukQmE'
+    assert playlist[61] == 'Y6ljFaKRTrI'
 
 
-# Testing download
+# Testing download module
 
 
 def test_download_from_yt(client):
@@ -173,7 +146,7 @@ def test_download_from_yt(client):
         pass
     filename = download('https://www.youtube.com/watch?v=rTyKk53Wq3w', dir=TEMP_DIR)
     filename = os.path.dirname(filename) + os.path.sep + \
-               concatenate_elements(filename.split(os.sep)[-1].split('.')) + 'mp3'
+               '.'.join(filename.split(os.sep)[-1].split('.')[:-1]) + '.mp3'
     assert os.path.isfile(filename) is True
 
 
@@ -185,15 +158,101 @@ def test_download_from_sc(client):
     filename = download('https://soundcloud.com/elinacooper/'
                         'bring-me-the-horizon-nihilist-bluescover-by-the-veer-union', dir=TEMP_DIR)
     filename = os.path.dirname(filename) + os.path.sep + \
-               concatenate_elements(filename.split(os.sep)[-1].split('.')) + 'mp3'
+               '.'.join(filename.split(os.sep)[-1].split('.')[:-1]) + '.mp3'
     assert os.path.isfile(filename) is True
 
 
-def test_download_yt_files(client2):
+def test_download_yt_files(client):
     try:
         os.mkdir(TEMP_DIR)
     except FileExistsError:
         pass
     l = get_yt_playlist_items('https://www.youtube.com/playlist?list=PLk_klgt4LMVdcHAKqQ93bKtQ_r2YgsxlP', 0, 2)
     path = download_yt_files_sync(l, dir=TEMP_DIR)
-    os.path.isfile(path[0])
+    assert os.path.isfile(path[0]) is True
+
+
+# Testing tags module
+
+
+def test_get_yt_video_tags(client):
+    tags = get_yt_video_tags('keMBtyjYUPQ')
+    assert tags[0] == 'starsetonline'
+    assert tags[1] == 'STARSET - PERFECT MACHINE (Official Audio)'
+    assert tags[2] == 'https://i.ytimg.com/vi/keMBtyjYUPQ/default.jpg'
+
+
+def test_get_sc_file_tags(client):
+    tags = get_sc_file_tags('https://soundcloud.com/bluestahli/the-devil')
+    assert tags[0] == 'Blue_Stahli'
+    assert tags[1] == 'The Devil'
+    assert tags[2] is not None
+
+
+def test_get_repaired_video_tags(client):
+    tags = get_repaired_audio_tags('starsetonline', 'STARSET - PERFECT MACHINE (Official Audio)')
+    assert tags[0] == 'Starset'
+    assert tags[1] == 'Perfect Machine'
+
+    tags = get_repaired_audio_tags('starsetonline', 'PERFECT MACHINE (Official Audio)')
+    assert tags[0] == 'Starsetonline'
+    assert tags[1] == 'Perfect Machine'
+
+
+def test_get_spotify_auth_token(client):
+    assert get_spotify_auth_token() is not None
+
+
+def test_get_repaired_tags_from_spotify(client):
+    token = get_spotify_auth_token()
+    tags = get_repaired_tags_from_spotify(token, 'STARSET', 'PERFECT MACHINE')
+    assert tags['album'] is not None
+    tags = get_repaired_tags_from_spotify(token, 'The Pretty Reckless', 'Death By Rock And Roll')
+    assert tags.get('album') is None
+
+
+def test_get_artist_tags_from_spotify(client):
+    token = get_spotify_auth_token()
+    tags = get_artist_tags_from_spotify(token, 'Chevelle')
+    assert tags['artist'] == 'Chevelle'
+
+
+def test_get_repaired_tags_from_itunes(client):
+    tags = get_repaired_tags_from_itunes('STARSET', 'PERFECT MACHINE')
+    assert tags['album'] is not None
+    tags = get_repaired_tags_from_itunes('The Pretty Reckless', 'Death By Rock And Roll')
+    assert tags.get('album') is None
+    tags = get_repaired_tags_from_itunes('Epica', 'Design Your Universe')
+    assert tags['album'] == 'Design Your Universe'
+    assert 'Design Your Universe' in tags['title']
+    assert tags['number'] == 13
+
+
+def test_get_repaired_tags_for_yt(client):
+    tags = get_repaired_tags_for_yt('dhZTNgAs4Fc')
+    assert tags['album'] is not None
+    tags = get_repaired_tags_for_yt('DpSARXWyCO4')
+    assert tags['artist'] == 'Starxfox2772'
+    tags = get_repaired_tags_for_yt('BX6KILafIS0')
+    assert tags['title'] == 'Death By Rock And Roll'
+
+
+def test_get_repaired_tags_for_sc(client):
+    tags = get_repaired_tags_for_sc('https://soundcloud.com/bluestahli/the-devil')
+    assert 'The Devil' in tags['album']
+    assert 'The Devil' in tags['title']
+
+
+def test_insert_tags(client):
+    try:
+        os.mkdir(TEMP_DIR)
+    except FileExistsError:
+        pass
+    filename = download('https://www.youtube.com/watch?v=DpSARXWyCO4', dir=TEMP_DIR)
+    filepath = os.path.dirname(filename) + os.path.sep + \
+               '.'.join(filename.split(os.sep)[-1].split('.')[:-1]) + '.mp3'
+    assert os.path.isfile(filepath) is True
+    tags = get_repaired_tags_for_yt('DpSARXWyCO4')
+    insert_tags(filepath, tags)
+    file = ID3(filepath)
+    assert file.getall('APIC')[0] == APIC(3, 'image/jpeg', 3, 'Front cover', get_image_bytes_from_url(tags['image']))

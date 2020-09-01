@@ -1,6 +1,6 @@
 from app import db
 from app.auth import bp
-from app.tasks import send_confirmation_email
+from app.tasks.mail import send_confirmation_email
 from app.auth.forms import SignUpForm
 from app.auth.forms import SignInForm
 from app.auth.forms import ChangePasswordForm
@@ -38,10 +38,6 @@ def sign_up():
             send_confirmation_email(u, 'Confirm email.', 'emails/confirm_user')
             flash('User successfully created. Please confirm email and then you will be able to sign in.')
             flash(f'Notice that Your confirmation link expires in {current_app.config["EXPIRATION_TIME"]} minutes!')
-
-            # token = u.get_confirmation_token()
-            # print(url_for('auth.confirm_user', token=token, _external=True))
-
             return render_template('auth/info.html')
         else:
             return render_template('auth/sign_up.html', form=form)
@@ -109,10 +105,6 @@ def request_password_change():
 
             flash('Please check your email to continue process.')
             flash(f'Notice that Your confirmation link expires in {current_app.config["EXPIRATION_TIME"]} minutes!')
-
-            # token = current_user.get_confirmation_token()
-            # print(url_for('auth.confirm_user', token=token, _external=True))
-
             return render_template('auth/info.html')
     else:
         form = RequestPasswordChangeForm()

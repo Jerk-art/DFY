@@ -1,17 +1,12 @@
 <p>Dear {{ user.username }},</p>
 <p>
-    Your file is waiting on you! So:
+    During downloading of your files happened EXTREMELY unexpected error.<br>
+    Please make another try:
     <a href="{{ url_for('main.download_playlist_items', _external=True) }}">
         click here
     </a>.
 </p>
 <p>Alternatively, you can paste the following link in your browser's address bar:</p>
 <p>{{ url_for('main.download_playlist_items', _external=True) }}</p>
-{% if errors_list[0] %}
-  <p style="color: red"> Failed to download: </p>
-  {% for el in errors_list %}
-    <a style="color: orange;" href="{{el}}">  {{el}}</a><br>
-  {% endfor %}
-{% endif %}
 <p>Sincerely,</p>
 <p>DFY</p>

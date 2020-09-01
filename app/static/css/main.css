@@ -147,7 +147,7 @@ label .error{
 	display: block;
 }
 
-.quality_chose_holder{
+.chose_holder{
 	height: 30px;
 	border: 0px;
 	border-radius: 8px;
@@ -155,13 +155,38 @@ label .error{
 	opacity: 0.6;
 }
 
-.quality_chose_holder:hover{
-	opacity: 0.9;
+.repair_tags_checkbox{
+	margin-top: 7px;
+}
+
+.chose_holder .row{
+	margin: 0px;
+}
+
+.chose_holder .col-sm-2{
+	padding-left: 0px;
+}
+
+.chose_holder .col-sm-9{
+	text-align: center;
+	padding-right: 0px;
+}
+
+.repair_tags label{
+	margin-top: 3px;
 }
 
 .quality_chose{
 	margin-top: 1px;
 	height: 28px;
+}
+
+.chose_holder3 label{
+	display: none;
+}
+
+.chose_holder3 select{
+	display: none;
 }
 
 .settings{
@@ -200,7 +225,7 @@ label .error{
 	margin: 0px;
 }
 
-.download_playlist_form .quality_chose_holder label{
+.download_playlist_form .chose_holder label{
 	color: white;
 }
 

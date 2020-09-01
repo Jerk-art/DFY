@@ -1,8 +1,8 @@
 from app import db
-from app.tasks import download
-from app.tasks import download_yt_files
-from app.tasks import get_download_response
-from app.tasks import get_yt_playlist_items
+from app.tasks.info import get_yt_playlist_items
+from app.tasks.download import download
+from app.tasks.download import download_yt_files
+from app.tasks.download import get_download_response
 from app.main import bp
 from app.main.forms import DownloadForm
 from app.main.forms import DownloadForm2
@@ -16,9 +16,11 @@ from flask import request
 from flask import flash
 from flask import url_for
 from flask import jsonify
-from flask import current_app
 from flask_login import current_user
 from youtube_dl import DownloadError
+
+import os
+import time
 
 
 @bp.route('/', methods=['GET'])
@@ -43,6 +45,8 @@ def index():
 
 @bp.route('/download_yt', methods=['GET', 'POST'])
 def download_yt():
+    repair_tags = False
+    dir = f'app{os.path.sep}tasks{os.path.sep}temp{os.path.sep}'
     if request.method == "GET":
         return redirect(url_for('main.index', active_slide=1))
     if not current_user.is_authenticated:
@@ -54,6 +58,7 @@ def download_yt():
                 return redirect(url_for('main.index', active_slide=1))
             t = Task(description="Downloading mp3", user_ip=str(request.remote_addr), status_code=0, progress='Waiting')
             quality = 192
+            dir += str(request.remote_addr)
             print(f'Loading from youtube user ip:{request.remote_addr} data:{youtube_form.link.data}')
         else:
             flash(youtube_form.link.errors[0], 'yt')
@@ -68,6 +73,8 @@ def download_yt():
                 return redirect(url_for('main.index', active_slide=1))
             t = Task(description="Downloading mp3", user_id=current_user.id, status_code=0, progress='Waiting')
             quality = get_quality(youtube_form.quality.data)
+            repair_tags = youtube_form.repair_tags.data
+            dir += str(current_user.id)
             print(f'Loading from youtube user id:{current_user.id} data:{youtube_form.link.data}')
         else:
             flash(youtube_form.link.errors[0], 'yt')
@@ -77,9 +84,9 @@ def download_yt():
     db.session.commit()
     try:
         if youtube_form.link.data.startswith('https://www.youtube.com/watch?v='):
-            file = download(youtube_form.link.data[:43], task=t, quality=quality)
+            file = download(youtube_form.link.data[:43], task=t, quality=quality, repair_tags=repair_tags, dir=dir)
         else:
-            file = download(youtube_form.link.data[:28], task=t, quality=quality)
+            file = download(youtube_form.link.data[:28], task=t, quality=quality, repair_tags=repair_tags, dir=dir)
     except DownloadError as err:
         t.force_stop('Download error')
         raise err
@@ -88,6 +95,8 @@ def download_yt():
 
 @bp.route('/download_sc', methods=['GET', 'POST'])
 def download_sc():
+    dir = f'app{os.path.sep}tasks{os.path.sep}temp{os.path.sep}'
+    repair_tags = False
     if request.method == "GET":
         return redirect(url_for('main.index', active_slide=2))
     if not current_user.is_authenticated:
@@ -99,6 +108,7 @@ def download_sc():
                 return redirect(url_for('main.index', active_slide=1))
             t = Task(description="Downloading mp3", user_ip=str(request.remote_addr), status_code=0, progress='Waiting')
             quality = 192
+            dir += str(request.remote_addr)
             print(f'Loading from youtube user ip:{request.remote_addr} data:{soundcloud_form.link.data}')
         else:
             flash(soundcloud_form.link.errors[0], 'sc')
@@ -113,6 +123,8 @@ def download_sc():
                 return redirect(url_for('main.index', active_slide=1))
             t = Task(description="Downloading mp3", user_id=current_user.id, status_code=0, progress='Waiting')
             quality = get_quality(soundcloud_form.quality.data)
+            repair_tags = soundcloud_form.repair_tags.data
+            dir += str(current_user.id)
             print(f'Loading from youtube user id:{current_user.id} data:{soundcloud_form.link.data}')
         else:
             flash(soundcloud_form.link.errors[0], 'sc')
@@ -121,7 +133,7 @@ def download_sc():
     db.session.add(t)
     db.session.commit()
     try:
-        file = download(soundcloud_form.link.data, task=t, quality=quality)
+        file = download(soundcloud_form.link.data, task=t, quality=quality, repair_tags=repair_tags, dir=dir)
     except DownloadError as err:
         t.force_stop('Download error')
         raise err
@@ -159,6 +171,8 @@ def download_playlist_items():
                          status_code=3,
                          progress='Waiting')
                 quality = get_quality(form.quality.data)
+                repair_tags = form.repair_tags.data
+                dir = f'app{os.path.sep}tasks{os.path.sep}temp{os.path.sep}{current_user.id}'
                 print(f'Loading playlist items from youtube user id:{current_user.id} data:{form.link.data}')
             else:
                 if form.link.errors:
@@ -176,7 +190,7 @@ def download_playlist_items():
 
     files_list = get_yt_playlist_items(form.link.data, form.first_item_number.data - 1, form.last_item_number.data)
 
-    download_yt_files(files_list, task=t, quality=quality)
+    download_yt_files(files_list, task=t, quality=quality, repair_tags=repair_tags, dir=dir)
 
     return render_template('/download_playlist_progress.html')
 
@@ -187,8 +201,7 @@ def get_file():
         t = Task.query.filter_by(user_id=current_user.id, status_code=4).first()
         if t:
             if t.progress.startswith('Files downloaded') and t.description == 'Downloading playlist items':
-                return get_download_response(t.unique_process_info, t, ext='zip')
-                return get_download_response(t.unique_process_info, t, ext='zip', end_task=False)
+                return get_download_response(t.unique_process_info, t, ext='.zip', end_task=False)
             else:
                 return abort(403)
         else:
@@ -199,6 +212,7 @@ def get_file():
 
 @bp.route('/get_progress', methods=['GET'])
 def get_progress():
+    time.sleep(1)
     if not current_user.is_authenticated:
         t = Task.query.filter_by(user_ip=str(request.remote_addr), status_code=0).first()
     else:
@@ -220,7 +234,8 @@ def get_playlist_downloading_progress():
             files = t.files.all()
             if files and len(files) > 0:
                 for el in sorted(files, key=files.index):
-                    statuses += str(el.status_code)
+                    if el.index != 0:
+                        statuses += str(el.status_code)
                 return jsonify({'Status_code': t.status_code, 'Progress': t.progress, 'Status_codes': statuses})
             else:
                 return jsonify({'Status_code': t.status_code, 'Progress': t.progress, 'Status_codes': None})

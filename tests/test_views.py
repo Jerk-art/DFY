@@ -1,23 +1,37 @@
-import pytest
-import shutil
-
 from app import create_app, db
 from app.models import User
+from app.tasks.tags import get_repaired_tags_for_yt
+from app.tasks.tags import get_repaired_tags_for_sc
+from app.tasks.tags import ID3, TIT2
 from config import Config
+
+import time
+import pytest
+import shutil
+import os
+
+
+TEMP_DIR = f'.{os.path.sep}tests{os.path.sep}temp'
 
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     USE_CELERY = False
+    SEND_MAILS = False
+    SYNC_DOWNLOADINGS = True
+    DOWNLOAD_PATH = TEMP_DIR
 
 
 app = create_app(TestConfig)
 
-
 @pytest.fixture
 def client():
+    try:
+        os.mkdir(TEMP_DIR)
+    except FileExistsError:
+        pass
     with app.test_client() as client:
         app_context = app.app_context()
         app_context.push()
@@ -35,7 +49,7 @@ def client():
     app_context.pop()
 
     try:
-        shutil.rmtree('./temp')
+        shutil.rmtree(TEMP_DIR)
     except FileNotFoundError:
         pass
 
@@ -45,6 +59,21 @@ def test_index_view(client):
     assert r.status_code == 200
     r = client.get('/index')
     assert r.status_code == 200
+
+
+def test_index_view_authorized(client):
+    u = User.query.get(1)
+    u.confirmed = True
+    db.session.add(u)
+    db.session.commit()
+
+    client.post('/sign_in', data=dict(username='user',
+                                      email='user@example.com',
+                                      password='12345678'),
+                follow_redirects=True)
+    r = client.get('/index')
+    assert b'Quality' in r.data
+    assert b'Tag it' in r.data
 
 
 def test_get_progress_view(client):
@@ -73,6 +102,84 @@ def test_download_sc_view(client):
     r = client.post('/download_sc', data=dict(link='https://soundcloud.com/elinacooper/'
                                                    'bring-me-the-horizon-nihilist-bluescover-by-the-veer-union'))
     assert r.status_code == 200
+
+
+def test_download_yt_view_authorized(client):
+    u = User.query.get(1)
+    u.confirmed = True
+    db.session.add(u)
+    db.session.commit()
+
+    client.post('/sign_in', data=dict(username='user',
+                                      email='user@example.com',
+                                      password='12345678'),
+                follow_redirects=True)
+    sep = os.path.sep
+    client.post('/download_yt', data=dict(link='https://www.youtube.com/watch?v=nMUyQqlTR_4', repair_tags=True))
+    filepath = f'{TEMP_DIR}{sep}Task1{sep}' + 'NINE LASHES - Rise (Official Lyric Video).mp3'
+    file = ID3(filepath)
+    tags = get_repaired_tags_for_yt('nMUyQqlTR_4')
+    assert file.getall('TIT2')[0] == TIT2(encoding=3, text=tags['title'])
+    os.remove(filepath)
+
+
+def test_download_sc_view_authorized(client):
+    u = User.query.get(1)
+    u.confirmed = True
+    db.session.add(u)
+    db.session.commit()
+
+    client.post('/sign_in', data=dict(username='user',
+                                      email='user@example.com',
+                                      password='12345678'),
+                follow_redirects=True)
+
+    client.post('/download_sc', data=dict(link='https://soundcloud.com/bluestahli/the-devil', repair_tags=True))
+    sep = os.path.sep
+    filepath = f'{TEMP_DIR}{sep}Task1{sep}' + 'The Devil.mp3'
+    file = ID3(filepath)
+    tags = get_repaired_tags_for_sc('https://soundcloud.com/bluestahli/the-devil')
+    assert file.getall('TIT2')[0] == TIT2(encoding=3, text=tags['title'])
+    os.remove(filepath)
+
+
+def test_download_playlist_items_view(client):
+    r = client.get('download_playlist_items', follow_redirects=True)
+    assert b'Download' in r.data
+
+    r = client.post('download_playlist_items', follow_redirects=True)
+    assert b'Download' in r.data
+
+    u = User.query.get(1)
+    u.confirmed = True
+    db.session.add(u)
+    db.session.commit()
+
+    client.post('/sign_in', data=dict(username='user',
+                                      email='user@example.com',
+                                      password='12345678'),
+                follow_redirects=True)
+
+    r = client.get('download_playlist_items', follow_redirects=True)
+    assert b'First item' in r.data
+
+    client.post('/download_playlist_items',
+                data=dict(link='https://www.youtube.com/playlist?list=OLAK5uy_kf2mr4s7G3ErS-ruCXgDFFwY8HyHQijfA',
+                          first_item_number=1,
+                          last_item_number=2))
+    file_ready = False
+    while not file_ready:
+        data = client.get('/get_playlist_downloading_progress').get_json()
+        if data['Status_code'] == 3:
+            time.sleep(1)
+            pass
+        elif data['Status_code'] == 4:
+            sep = os.path.sep
+            dir = f'{TEMP_DIR}{sep}Task1{sep}'
+            assert os.path.isfile(dir + os.listdir(dir)[0]) is True
+            file_ready = True
+        else:
+            raise Exception('Unexpected task status code')
 
 
 def test_sign_up_view(client):

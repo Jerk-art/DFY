@@ -1,5 +1,11 @@
 Dear {{ user.username }},
 Your file is waiting on you! So click here:
 {{ url_for('main.download_playlist_items', _external=True) }}
+{% if errors_list[0] %}
+Failed to download:
+{% for el in errors_list %}
+  {{ el }}
+{% endfor %}
+{% endif %}
 Sincerely,
 DFY

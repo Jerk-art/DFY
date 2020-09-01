@@ -5,3 +5,4 @@ venv
 /System Volume Information
 /migrations
 /.env
+test.py

@@ -6,7 +6,7 @@ class CeleryConfig:
     broker_url = 'redis://localhost:6379'
     task_default_queue = 'default'
     task_queues = (Queue('default', routing_key='task.#'), Queue('downloading_tasks', routing_key='download.#'))
-    include = [f'app.tasks']
+    include = ['app.tasks.download', 'app.tasks.mail']
     task_default_exchange = 'tasks'
     task_default_exchange_type = 'topic'
     task_default_routing_key = 'task.default'

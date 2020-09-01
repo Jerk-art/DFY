@@ -6,12 +6,16 @@ from flask_login import LoginManager
 from config import Config
 from celery import Celery
 from celery_config import CeleryConfig
+from app.scheduler import Scheduler
 
+import os
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
+scheduler = Scheduler(tasks_save_file=f'app{os.path.sep}scheduler{os.path.sep}tasks.pkl',
+                      timers_save_file=f'app{os.path.sep}scheduler{os.path.sep}timers.pkl')
 
 
 if Config.USE_CELERY:

@@ -1,6 +1,7 @@
 Dear {{ user.username }},
 To confirm your email click on the following link:
 {{ url_for('auth.confirm_user', token=token, _external=True) }}
+If you don't confirm your account in {{ exp_time }} minutes it will be wiped.
 If you have not registered in DFY simply ignore this message.
 Sincerely,
 DFY

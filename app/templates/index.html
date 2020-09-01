@@ -45,9 +45,25 @@
 											{% if current_user.is_authenticated %}
 												<div class="row">
 													<div class="col-sm-6 offset-sm-3 settings">
-														<div class="col-sm-6 quality_chose_holder">
-															{{ youtube_form.quality.label }}
-															{{ youtube_form.quality(class_="quality_chose") }}
+														<div class="row">
+															<div class="col-sm-6">
+																<div class="chose_holder" id="chose_holder1">
+																	{{ youtube_form.quality.label }}
+																	{{ youtube_form.quality(class_="quality_chose") }}
+																</div>
+															</div>
+															<div class="col-sm-6">
+																<div class="chose_holder repair_tags" id="chose_holder2">
+																	<div class="row">
+																		<div class="col-sm-9">
+																			{{ youtube_form.repair_tags.label }}
+																		</div>
+																		<div class="col-sm-2">
+																			{{ youtube_form.repair_tags(class="repair_tags_checkbox") }}
+																		</div>
+																	</div>
+																</div>
+															</div>
 														</div>
 													</div>
 												</div>
@@ -97,9 +113,25 @@
 											{% if current_user.is_authenticated %}
 												<div class="row">
 													<div class="col-sm-6 offset-sm-3 settings">
-														<div class="col-sm-6 quality_chose_holder">
-															{{ soundcloud_form.quality.label }}
-															{{ soundcloud_form.quality(class_="quality_chose") }}
+														<div class="row">
+															<div class="col-sm-6">
+																<div class="chose_holder chose_holder3" id="chose_holder3">
+																	{{ soundcloud_form.quality.label }}
+																	{{ soundcloud_form.quality(class_="quality_chose") }}
+																</div>
+															</div>
+															<div class="col-sm-6">
+																<div class="chose_holder repair_tags" id="chose_holder4">
+																	<div class="row">
+																		<div class="col-sm-9">
+																			{{ soundcloud_form.repair_tags.label }}
+																		</div>
+																		<div class="col-sm-2">
+																			{{ soundcloud_form.repair_tags(class="repair_tags_checkbox") }}
+																		</div>
+																	</div>
+																</div>
+															</div>
 														</div>
 													</div>
 												</div>
@@ -125,3 +157,7 @@
 		</div>
 	</section>
 {% endblock content %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/hover_animation.js') }}"></script>
+{% endblock scripts %}

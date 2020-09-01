@@ -3,14 +3,15 @@ from flask import current_app
 from wtforms import SubmitField
 from wtforms import SelectField
 from wtforms import IntegerField
+from wtforms import BooleanField
 from wtforms.fields.html5 import URLField
 from wtforms.validators import DataRequired, url
 from wtforms.validators import ValidationError
-from app.tasks import get_yt_file_info
-from app.tasks import get_sc_file_info
-from app.tasks import is_allowed_duration
-from app.tasks import get_yt_playlist_info
-from app.tasks import BadUrlError
+from app.tasks.info import get_yt_file_info
+from app.tasks.info import get_sc_file_info
+from app.tasks.info import is_allowed_duration
+from app.tasks.info import get_yt_playlist_info
+from app.tasks.info import BadUrlError
 
 
 QUALITY_LIST = [(1, 64), (2, 128), (3, 192), (4, 320)]
@@ -53,6 +54,7 @@ class DownloadForm2(FlaskForm):
                           default=3,
                           validators=[DataRequired()],
                           coerce=int)
+    repair_tags = BooleanField('Tag it', default=True)
     submit = SubmitField('Download')
 
 
@@ -62,6 +64,7 @@ class DownloadPlaylistItemsForm(FlaskForm):
                                      validators=[DataRequired(message='Please enter both items numbers.')])
     last_item_number = IntegerField('<-- Last item',
                                     validators=[DataRequired(message='Please enter both items numbers.')])
+    repair_tags = BooleanField('Tag it', default=True)
     quality = SelectField('Quality',
                           choices=QUALITY_LIST,
                           default=3,
@@ -72,7 +75,7 @@ class DownloadPlaylistItemsForm(FlaskForm):
     def validate_link(self, link):
         if link.data.startswith('https://www.youtube.com/watch?v='):
             pass
-        elif link.data.startswith('https://www.youtube.com/playlist?list=') and len(link.data) > 71:
+        elif link.data.startswith('https://www.youtube.com/playlist?list=') and len(link.data) > 61:
             pass
         else:
             print(len(link.data))

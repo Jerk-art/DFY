@@ -7,9 +7,10 @@ from werkzeug.security import check_password_hash
 from time import time
 from jwt import encode
 from jwt import decode
-from pickle import dump
-from pickle import load
-from os.path import sep
+from datetime import datetime
+
+
+import hashlib
 
 
 class VerificationError(Exception):
@@ -19,7 +20,7 @@ class VerificationError(Exception):
 class Task(db.Model):
     """Object which represent task on the application
 
-    status_codes = {'running': 0, 'completed': 1, 'error': 2, 'running_long_term': 3, 'waiting_on_user': 4}
+    status_codes = {'running': 0, 'completed': 1, 'error': 2, 'running_long_term': 3, 'ready_to_download': 4}
     """
 
     id = db.Column(db.Integer, primary_key=True)
@@ -30,6 +31,8 @@ class Task(db.Model):
     progress = db.Column(db.String(128))
     unique_process_info = db.Column(db.String(128))
     files = db.relationship('FileInfo', backref='task', lazy='dynamic')
+    junk_cleared = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    completed_at = db.Column(db.DateTime)
 
     def __repr__(self):
         return f'<Task {self.id}>'
@@ -45,20 +48,37 @@ class Task(db.Model):
         self.progress = progress
 
     @staticmethod
-    def stop_all_tasks():
+    def stop_tasks(status_code=0, prefix='', print_lock=None):
         """Use force_stop to all uncompleted tasks"""
 
-        print("Stopping uncompleted tasks.")
+        if print_lock:
+            print_lock.acquire()
+            print(f'{prefix}Stopping uncompleted tasks')
+            print_lock.release()
+        else:
+            print(f'{prefix}Stopping uncompleted tasks')
         counter = 0
-        for task in Task.query.filter_by(status_code=0).all():
+        for task in Task.query.filter_by(status_code=status_code).all():
             task.force_stop()
             db.session.add(task)
             db.session.commit()
             counter += 1
-        if counter == 1:
-            print(f"Stopped 1 task")
+        if counter == 0:
+            pass
+        elif counter == 1:
+            if print_lock:
+                print_lock.acquire()
+                print(f'{prefix}Stopped 1 task')
+                print_lock.release()
+            else:
+                print(f'{prefix}Stopped 1 task')
         else:
-            print(f"Stopped {counter} tasks")
+            if print_lock:
+                print_lock.acquire()
+                print(f'{prefix}Stopped {counter} tasks')
+                print_lock.release()
+            else:
+                print(f'{prefix}Stopped 1 task')
 
 
 class User(UserMixin, db.Model):
@@ -68,8 +88,9 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(32), unique=True, index=True)
     email = db.Column(db.String(320), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    confirmed = db.Column(db.Boolean, nullable=False, default=False)
+    confirmed = db.Column(db.Boolean, nullable=False, default=False, index=True)
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
+    registration_time = db.Column(db.DateTime, default=datetime.now)
 
     def __repr__(self):
         return f'<User "{self.username}">'
@@ -103,6 +124,8 @@ class FileInfo(db.Model):
     """Playlist object
 
     status_codes = {'not_processed': 0, 'processed': 1, 'procession_error': 2}
+
+    index 0 is used for all archives of the task.
     """
 
     id = db.Column(db.Integer, primary_key=True)
@@ -110,11 +133,32 @@ class FileInfo(db.Model):
     file_id = db.Column(db.String(128), index=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), index=True)
     status_code = db.Column(db.Integer, nullable=False, default=0)
+    file_hash = db.Column(db.String(32), index=True)
 
     @classmethod
     def make_records(cls, list_, task_id):
-        i = 0
+        i = 1
         for record in list_:
             db.session.add(cls(index=int(i), file_id=record, task_id=task_id))
             i += 1
         db.session.commit()
+
+    def set_file_hash(self, filepath):
+        block_size = 2000000
+        file_hash = hashlib.sha256()
+        with open(filepath, 'rb') as file:
+            fb = file.read(block_size)
+            while fb:
+                file_hash.update(fb)
+                fb = file.read(block_size)
+        self.file_hash = file_hash.hexdigest()
+
+    def check_file_hash(self, filepath):
+        block_size = 2000000
+        file_hash = hashlib.sha256()
+        with open(filepath, 'rb') as file:
+            fb = file.read(block_size)
+            while fb:
+                file_hash.update(fb)
+                fb = file.read(block_size)
+        return self.file_hash == file_hash.hexdigest()
