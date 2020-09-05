@@ -96,6 +96,10 @@ class DownloadPlaylistItemsForm(FlaskForm):
         except BadUrlError:
             raise ValidationError('Please check passed link for correctness.')
 
-    def validate_last_item_number(self, last_item_number):
+    @staticmethod
+    def validate_last_item_number(form, last_item_number):
         if last_item_number.data < 2:
             raise ValidationError('Bad first item number.')
+        else:
+            if last_item_number.data - form.first_item_number.data + 1 > current_app.config['MAX_PLAYLIST_ITEMS']:
+                raise ValidationError(f'Maximum number of items is {current_app.config["MAX_PLAYLIST_ITEMS"]}.')

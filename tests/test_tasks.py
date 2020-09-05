@@ -225,7 +225,7 @@ def test_get_repaired_tags_from_itunes(client):
     tags = get_repaired_tags_from_itunes('Epica', 'Design Your Universe')
     assert tags['album'] == 'Design Your Universe'
     assert 'Design Your Universe' in tags['title']
-    assert tags['number'] == 13
+    assert tags['number'] == 19
 
 
 def test_get_repaired_tags_for_yt(client):

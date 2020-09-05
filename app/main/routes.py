@@ -16,6 +16,7 @@ from flask import request
 from flask import flash
 from flask import url_for
 from flask import jsonify
+from flask import current_app
 from flask_login import current_user
 from youtube_dl import DownloadError
 
@@ -147,12 +148,15 @@ def download_playlist_items():
         if current_user.is_authenticated:
             t = Task.query.filter_by(user_id=current_user.id, status_code=3).first()
             if t and t.description == 'Downloading playlist items':
-                return render_template('/download_playlist_progress.html')
+                return render_template('/download_playlist_progress.html',
+                                       exp_time=current_app.config['PLAYLIST_LIVE_TIME'])
             else:
                 t = Task.query.filter_by(user_id=current_user.id, status_code=4).first()
                 if t:
-                    return render_template('/download_playlist_progress.html')
-            return render_template('/download_playlist_items.html', form=form)
+                    return render_template('/download_playlist_progress.html',
+                                           exp_time=current_app.config['PLAYLIST_LIVE_TIME'])
+            return render_template('/download_playlist_items.html', form=form,
+                                   duration=current_app.config['ALLOWED_DURATION'])
         else:
             return redirect(url_for('main.index'))
     else:
@@ -160,11 +164,13 @@ def download_playlist_items():
             if form.validate_on_submit():
                 t = Task.query.filter_by(user_id=current_user.id, status_code=3).first()
                 if t:
-                    return render_template('/download_playlist_progress.html')
+                    return render_template('/download_playlist_progress.html',
+                                           exp_time=current_app.config['PLAYLIST_LIVE_TIME'])
                 else:
                     t = Task.query.filter_by(user_id=current_user.id, status_code=4).first()
                     if t:
-                        return render_template('/download_playlist_progress.html')
+                        return render_template('/download_playlist_progress.html',
+                                               exp_time=current_app.config['PLAYLIST_LIVE_TIME'])
 
                 t = Task(description="Downloading playlist items",
                          user_id=current_user.id,
@@ -181,7 +187,8 @@ def download_playlist_items():
                     flash(form.first_item_number.errors[0])
                 elif form.last_item_number.errors:
                     flash(form.last_item_number.errors[0])
-                return render_template('/download_playlist_items.html', form=form)
+                return render_template('/download_playlist_items.html', form=form,
+                                       duration=current_app.config['ALLOWED_DURATION'])
         else:
             return redirect(url_for('main.index'))
 
@@ -192,7 +199,8 @@ def download_playlist_items():
 
     download_yt_files(files_list, task=t, quality=quality, repair_tags=repair_tags, dir=dir)
 
-    return render_template('/download_playlist_progress.html')
+    return render_template('/download_playlist_progress.html',
+                           exp_time=current_app.config['PLAYLIST_LIVE_TIME'])
 
 
 @bp.route('/get_file', methods=['GET'])

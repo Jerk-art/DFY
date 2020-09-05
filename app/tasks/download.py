@@ -124,28 +124,10 @@ def download_yt_files_sync(playlist: list, task_id=None, dir=None, quality=192, 
     app_context.push()
 
     part_size = current_app.config['PLAYLIST_PART_SIZE']
-
-    kwargs = {'dir': dir,
-              'quality': quality,
-              'repair_tags': repair_tags,
-              'send_mails': send_mails,
-              'part_size': part_size}
-
-    if not os.path.isdir(dir):
-        os.mkdir(os.path.realpath(dir))
-
-    dir = dir or os.path.dirname(os.path.realpath(__file__)) + os.path.sep + 'temp'
-
-    task = None
     if task_id:
         task = Task.query.get(task_id)
-        dir += os.path.sep + f'Task{task_id}'
-
-    if not os.path.isdir(dir):
-        os.mkdir(os.path.realpath(dir))
-
-    with open(dir + os.path.sep + 'kwargs', 'wb') as file:
-        pickle.dump(kwargs, file)
+    else:
+        task = None
 
     arcpath = (dir + os.path.sep + 'playlist.zip' or 'playlist.zip')
 
@@ -167,10 +149,7 @@ def download_yt_files_sync(playlist: list, task_id=None, dir=None, quality=192, 
             db.session.add(task)
             db.session.commit()
 
-        FileInfo.make_records(playlist, task.id)
-        arc_info = FileInfo(index=0, file_id='playlist.zip', task_id=task.id)
-        db.session.add(arc_info)
-        db.session.commit()
+        arc_info = FileInfo.query.filter_by(index=0, file_id='playlist.zip', task_id=task.id).first()
 
     errors_list = []
 
@@ -284,9 +263,41 @@ if Config.USE_CELERY:
 
 
 def download_yt_files(playlist: list, task=None, dir=None, quality=192, repair_tags=False):
+    part_size = current_app.config['PLAYLIST_PART_SIZE']
+    send_mails = current_app.config['SEND_MAILS']
+
     if current_app.config['DOWNLOAD_PATH']:
         dir = current_app.config['DOWNLOAD_PATH']
-    send_mails = current_app.config['SEND_MAILS']
+    else:
+        dir = dir or os.path.dirname(os.path.realpath(__file__)) + os.path.sep + 'temp'
+
+    kwargs = {'dir': dir,
+              'quality': quality,
+              'repair_tags': repair_tags,
+              'send_mails': send_mails,
+              'part_size': part_size}
+
+    if not os.path.isdir(dir):
+        os.mkdir(os.path.realpath(dir))
+
+    if task:
+        dir += os.path.sep + f'Task{task.id}'
+
+    if not os.path.isdir(dir):
+        os.mkdir(os.path.realpath(dir))
+
+    with open(dir + os.path.sep + 'kwargs', 'wb') as file:
+        pickle.dump(kwargs, file)
+
+    if task:
+        task.progress = 'Waiting'
+        db.session.add(task)
+        db.session.commit()
+        FileInfo.make_records(playlist, task.id)
+        arc_info = FileInfo(index=0, file_id='playlist.zip', task_id=task.id)
+        db.session.add(arc_info)
+        db.session.commit()
+
     if current_app.config['SYNC_DOWNLOADINGS']:
         app = current_app._get_current_object()
         download_yt_files_sync(playlist, task_id=task.id, quality=quality, dir=dir, repair_tags=repair_tags,

@@ -6,3 +6,4 @@ venv
 /migrations
 /.env
 test.py
+/tests/temp/
