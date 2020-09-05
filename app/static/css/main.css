@@ -280,6 +280,23 @@ label .error{
 	border-radius: 2px;
 }
 
+.side-info-line{
+	width: 2px;
+	height: 64px;
+	background-color: black;
+	margin-left: 63px;
+	margin-right: 9px;
+}
+
+.side-info{
+	font-size: 14px;
+	height: 64px;
+}
+
+.padding-top-30{
+	padding-top: 30px;
+}
+
 .progress_section{
 	padding-top: 76px;
 }
