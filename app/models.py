@@ -18,7 +18,7 @@ class VerificationError(Exception):
 
 
 class Task(db.Model):
-    """Object which represent task on the application
+    """Object which represent task
 
     status_codes = {'running': 0, 'completed': 1, 'error': 2, 'running_long_term': 3, 'ready_to_download': 4}
     """
@@ -97,18 +97,22 @@ class User(UserMixin, db.Model):
         return f'<User "{self.username}">'
 
     def set_password_hash(self, password):
+        """Create password hash and store it in corresponding field of db"""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        """Compare given password with user password hash"""
         return check_password_hash(self.password_hash, password)
 
     def get_confirmation_token(self):
+        """Get token using user id"""
         return encode({'value': self.id, 'exp': time() + current_app.config['EXPIRATION_TIME'] * 60},
                       current_app.config['SECRET_KEY'],
                       algorithm='HS256').decode('utf-8')
 
     @staticmethod
     def get_user_by_confirmation_token(token):
+        """Get user using token"""
         try:
             id = decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['value']
         except:
@@ -124,7 +128,7 @@ def load_user(id):
 class FileInfo(db.Model):
     """Playlist object
 
-    status_codes = {'not_processed': 0, 'processed': 1, 'procession_error': 2}
+    status_codes = {'not_processed': 0, 'processed': 1, 'error': 2}
 
     index 0 is used for all archives of the task.
     """
@@ -138,6 +142,7 @@ class FileInfo(db.Model):
 
     @classmethod
     def make_records(cls, list_, task_id):
+        """Create couple of FileInfo objects related to task with specified id and store them in db"""
         i = 1
         for record in list_:
             db.session.add(cls(index=int(i), file_id=record, task_id=task_id))
@@ -145,6 +150,7 @@ class FileInfo(db.Model):
         db.session.commit()
 
     def set_file_hash(self, filepath):
+        """Write hex file hash to the file_hash"""
         block_size = 2000000
         file_hash = hashlib.sha256()
         with open(filepath, 'rb') as file:
@@ -155,6 +161,7 @@ class FileInfo(db.Model):
         self.file_hash = file_hash.hexdigest()
 
     def check_file_hash(self, filepath):
+        """Compare hex file hash with recorded"""
         block_size = 2000000
         file_hash = hashlib.sha256()
         with open(filepath, 'rb') as file:

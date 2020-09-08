@@ -15,6 +15,9 @@ def get_yt_file_info(url: str):
     :param url: URL to youtube video
     :type url: str
 
+    :raises BadUrlError: when no information is received about the video from API
+    :raises ConnectionError: when status code not 200
+
     :returns: dict with value "yt" assigned to key "resource"
               and deserialized json answer from youtube API assigned to key "API_response"
     :rtype: dict
@@ -57,6 +60,8 @@ def get_sc_file_info(url: str):
     :param url: URL to soundcloud file
     :type url: str
 
+    :raises BadUrlError: when there is no information on request
+
     :returns: dict with value "sc" assigned to key "resource"
               0 or 1 assigned to key "type" (0 - single file, 1 - playlist item)
               and url assigned to key "url"
@@ -85,6 +90,25 @@ def get_sc_file_info(url: str):
 
 
 def get_yt_playlist_info(pid, max_results=0, page_token=None):
+    """Request info about youtube playlist using google API key specified in config
+
+
+    :param pid: youtube playlist id
+    :type pid: str
+    :param max_results: max results
+    :type max_results: int
+    :param page_token: token of page to be received
+    :type page_token: str
+
+    :raises ValueError: when max_results > 50
+    :raises BadUrlError: when no information is received from API
+    :raises ConnectionError: when status code not 200
+
+    :returns: deserialized json response as dict from API
+    :rtype: dict
+    """
+    if max_results > 50:
+        return ValueError(f'Maximum is 50 results, but requested {max_results}')
     if page_token:
         r = get(f'https://www.googleapis.com/youtube/v3/playlistItems?part=id%2CcontentDetails'
                 f'&maxResults={max_results}'
@@ -107,6 +131,23 @@ def get_yt_playlist_info(pid, max_results=0, page_token=None):
 
 
 def get_yt_playlist_items(link: str, start_index: int, end_index: int):
+    """Request playlist items with indexes in range specified by params start_index end end_index
+       In case when last index is greater than len of playlist it will be overridden with len value
+
+
+    :param link: link to youtube playlist
+    :type link: str
+    :param start_index: first index of range
+    :type start_index: int
+    :param end_index: last index of range
+    :type end_index: int
+
+    :raises BadUrlError: when playlist is empty
+    :raises IndexError: when first index is out of range
+
+    :returns: deserialized json response as dict from API
+    :rtype: dict
+    """
     if start_index < 0:
         raise IndexError('First index is out of range.')
     if end_index < start_index:
@@ -186,6 +227,8 @@ def is_allowed_duration(info: dict):
 
     :param info: The dict obtained from deserialization json answer from youtube or soundcloud API
     :type info: dict
+
+    :raises BadUrlError: when any other exception is occured
 
     :returns: True or False
     :rtype: bool

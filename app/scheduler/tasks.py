@@ -15,6 +15,7 @@ import os
 
 
 def stop_broken_tasks(print_lock):
+    """Stop all tasks with status_code 0"""
     app = create_app()
     with app.app_context():
         try:
@@ -24,6 +25,7 @@ def stop_broken_tasks(print_lock):
 
 
 def delete_unconfirmed_accounts(print_lock):
+    """Delete all unconfirmed, expired accounts"""
     app = create_app()
     with app.app_context():
         users = User.query.filter_by(confirmed=False).all()
@@ -50,6 +52,7 @@ def delete_unconfirmed_accounts(print_lock):
 
 
 def clear_junk(print_lock):
+    """Check db for completed tasks and clear junk"""
     app = create_app()
     with print_lock:
         print('[Scheduler] Checking for junk')
@@ -78,6 +81,7 @@ def clear_junk(print_lock):
 
 
 def check_ready_to_download_tasks(print_lock):
+    """Check tasks with status code 4 for expiration(if task expired it will be marked as completed)"""
     app = create_app()
     with app.app_context():
         with print_lock:
@@ -99,6 +103,7 @@ def check_ready_to_download_tasks(print_lock):
 
 
 def resume_long_term_tasks(print_lock):
+    """Resume tasks with status code 3 using serialized kwargs and stored in db FileInfo objects related to task"""
     app = create_app()
     with print_lock:
         print('[Scheduler] Checking for stopped long term tasks')
@@ -121,6 +126,15 @@ def resume_long_term_tasks(print_lock):
 
 
 def resume_long_term_task(kwargs, task, path_to_task):
+    """Resume long term task
+
+    :param kwargs: dict with args passed to task
+    :type kwargs: dict
+    :param task: task object
+    :type task: Task
+    :param path_to_task: path to task
+    :type path_to_task: str
+    """
     archives = list()
     playlist = list()
     for file in task.files.all():

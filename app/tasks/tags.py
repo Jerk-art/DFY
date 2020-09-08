@@ -9,6 +9,14 @@ import time
 
 
 def get_yt_video_tags(id):
+    """Get channel title, video title and thumbnail of video using youtube API
+
+    :param id: video id
+    :type id: str
+
+    :returns: tuple which contain channel title, video title and link to thumbnail
+    :rtype: tuple
+    """
     r = get(f'https://www.googleapis.com/youtube/v3/videos?part=snippet'
             f'&key={current_app.config["YOUTUBE_API_KEY"]}'
             f'&id={id}')
@@ -20,6 +28,14 @@ def get_yt_video_tags(id):
 
 
 def get_sc_file_tags(url: str):
+    """Get channel uploader nickname, file title and thumbnail
+
+    :param url: soundcloud file url
+    :type url: str
+
+    :returns: tuple which contain uploader nickname, file title and link to thumbnail
+    :rtype: tuple
+    """
     class Logger:
         def debug(self, msg):
             pass
@@ -43,7 +59,16 @@ def get_sc_file_tags(url: str):
 
 
 def get_repaired_audio_tags(channel_title, video_title):
+    """Get artist and song title using some split magic
 
+    :param channel_title: channel title(uploader nickname)
+    :type channel_title: str
+    :param video_title: video(file) title
+    :type video_title: str
+
+    :returns: tuple with artist and song title
+    :rtype: tuple
+    """
     def capitalize_all_words(s: str):
         res = str()
         for el in s.split(' '):
@@ -96,6 +121,11 @@ def get_repaired_audio_tags(channel_title, video_title):
 
 
 def get_spotify_auth_token():
+    """Get spotify API authentication token using current config
+
+    :returns: token as string
+    :rtype: str
+    """
     info = base64.b64encode(f"{current_app.config['SPOTIFY_UID']}:{current_app.config['SPOTIFY_SECRET']}".encode()).decode()
     r = post('https://accounts.spotify.com/api/token',
              headers={'Authorization': f'Basic {info}'},
@@ -109,6 +139,20 @@ class ReparationError(Exception):
 
 
 def get_repaired_tags_from_spotify(token, artist, title):
+    """Get tags about audio from spotify
+
+    :param token: API token
+    :type token: str
+    :param artist: artist name
+    :type artist: str
+    :param title: song title
+    :type title: str
+
+    :raises ReparationError: when nothing was found
+
+    :returns: dict with tags
+    :rtype: dict
+    """
     result = {}
     r = get(f'https://api.spotify.com/v1/search?q=artist%3A{artist.replace(" ", "%20")}'
              f'%20track%3A{title.replace(" ", "%20")}'
@@ -160,6 +204,18 @@ def get_repaired_tags_from_spotify(token, artist, title):
 
 
 def get_artist_tags_from_spotify(token, artist):
+    """Get tags about artist from spotify
+
+    :param token: API token
+    :type token: str
+    :param artist: artist name
+    :type artist: str
+
+    :raises ReparationError: when nothing was found
+
+    :returns: dict with tags
+    :rtype: dict
+    """
     result = {}
     r = get(f'https://api.spotify.com/v1/search?q=artist%3A{artist.replace(" ", "%20")}'
             f'&type=artist'
@@ -177,6 +233,18 @@ def get_artist_tags_from_spotify(token, artist):
 
 
 def get_repaired_tags_from_itunes(artist, title):
+    """Get tags about artist from spotify
+
+    :param artist: artist name
+    :type artist: str
+    :param title: song title
+    :type title: str
+
+    :raises ReparationError: when nothing was found
+
+    :returns: dict with tags
+    :rtype: dict
+    """
     result = {}
     r = get(f'https://itunes.apple.com/search?term={"+".join(artist.split(" "))}+{"+".join(title.split(" "))}'
             f'&media=music'
@@ -242,6 +310,14 @@ def get_repaired_tags_from_itunes(artist, title):
 
 
 def get_repaired_tags_for_yt(id):
+    """Get tags related to youtube video using its id
+
+    :param id: youtube video id
+    :type id: str
+
+    :returns: dict with tags
+    :rtype: dict
+    """
     video_tags = get_yt_video_tags(id)
     primary_tags = get_repaired_audio_tags(video_tags[0], video_tags[1])
     result = {}
@@ -263,6 +339,14 @@ def get_repaired_tags_for_yt(id):
 
 
 def get_repaired_tags_for_sc(url):
+    """Get tags related to soundcloud file using its url
+
+    :param url: url that leads to file
+    :type url: str
+
+    :returns: dict with tags
+    :rtype: dict
+    """
     video_tags = get_sc_file_tags(url)
     primary_tags = get_repaired_audio_tags(video_tags[0], video_tags[1])
     result = {}
@@ -284,10 +368,25 @@ def get_repaired_tags_for_sc(url):
 
 
 def get_image_bytes_from_url(url):
+    """Get image bytes from specified url
+
+    :param url: url that leads to file
+    :type url: str
+
+    :returns: image data
+    :rtype: bytes
+    """
     return get(url, stream=True).raw.read()
 
 
 def insert_tags(filepath, tags):
+    """Using mutagen inject tags inside mp3 file
+
+    :param filepath: path to file
+    :type filepath: str
+    :param tags: dict of tags
+    :type tags: dict
+    """
     try:
         file = ID3(filepath)
     except ID3NoHeaderError:

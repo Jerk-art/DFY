@@ -34,10 +34,14 @@ def download(link: str, task=None, dir=None, quality=192, log_info=None, repair_
     :param dir: path to directory where should be downloaded file,
                 if not specified or None, using temp directory in where placed this .py file
     :type dir: str
-    :param task: task object or None
+    :param task: task object which describe current task
     :type task: Task or None
-    :param quality: quality to be converted into
+    :param quality: quality that needs to be converted
     :type quality: int
+    :param log_info: string to be printed before downloading starts
+    :type log_info: str
+    :param repair_tags: define use repair tags functions or not(see tasks/tags.py to more info)
+    :type repair_tags: bool
 
     :returns: path to downloaded file
     :rtype: str
@@ -117,6 +121,28 @@ def download(link: str, task=None, dir=None, quality=192, log_info=None, repair_
 
 def download_yt_files_sync(playlist: list, task_id=None, dir=None, quality=192, repair_tags=False, app=None,
                            send_mails=True):
+    """Download couple of youtube files using param playlist through 'download' function
+
+
+    :param task_id: id of current task, which describe this process or None
+    :type task_id: int or None
+    :param playlist: list of youtube video ids represented as strings
+    :type playlist: list
+    :param dir: path to directory where should be downloaded file,
+                if not specified or None, using temp directory in where placed this .py file
+    :type dir: str
+    :param quality: quality that needs to be converted
+    :type quality: int
+    :param repair_tags: define use repair tags functions or not(see tasks/tags.py to more info)
+    :type repair_tags: bool
+    :param app: flask application object, if case it not passed function will create its own with base config
+    :type app: Flask
+    :param send_mails: boolean variable to define, send mails or not
+    :type send_mails: bool
+
+    :returns: path to downloaded file(in case when task_id not passed)
+    :rtype: str
+    """
     if not app:
         app = create_app()
     app.config['SEND_MAILS'] = send_mails
@@ -263,6 +289,27 @@ if Config.USE_CELERY:
 
 
 def download_yt_files(playlist: list, task=None, dir=None, quality=192, repair_tags=False):
+    """Wrapper to 'download_yt_files_sync' function. Create directory for downloading, kwargs file and FileInfo objects
+       for all ids in playlist and main archive
+       Depending on configuration can run 'download_yt_files_sync' directly in the 'main' thread,
+       in child thread or as celery task
+
+
+    :param task: task object which describe this process or None
+    :type task: Task or None
+    :param playlist: list of youtube video ids represented as strings
+    :type playlist: list
+    :param dir: path to directory where should be downloaded file,
+                if not specified or None, using temp directory in where placed this .py file
+    :type dir: str
+    :param quality: quality that needs to be converted
+    :type quality: int
+    :param repair_tags: define use repair tags functions or not(see tasks/tags.py to more info)
+    :type repair_tags: bool
+
+    :returns: path to downloaded file(in case when task_id not passed)
+    :rtype: str
+    """
     part_size = current_app.config['PLAYLIST_PART_SIZE']
     send_mails = current_app.config['SEND_MAILS']
 
@@ -316,7 +363,7 @@ def download_yt_files(playlist: list, task=None, dir=None, quality=192, repair_t
 
 
 def get_download_response(filename: str, t: Task, ext='.mp3', end_task=True):
-    """Get flask file send response
+    """Get flask send_from_directory response and end task if end_task is True
 
 
     :param filename: path to file to send
@@ -325,14 +372,18 @@ def get_download_response(filename: str, t: Task, ext='.mp3', end_task=True):
     :type t: Task
     :param ext: file extension
     :type ext: str
+    :param end_task: define end task after or not
+    :type end_task: bool
+
+    :returns: flask response
     """
 
     if end_task:
         t.progress = 'Done'
         t.status_code = 1
         t.completed_at = datetime.datetime.now()
-    db.session.add(t)
-    db.session.commit()
+        db.session.add(t)
+        db.session.commit()
 
     return send_from_directory(os.path.sep.join(os.path.realpath(filename).split(os.path.sep)[:-1]),
                                '.'.join(filename.split(os.sep)[-1].split('.')[:-1]) + ext,
@@ -341,12 +392,30 @@ def get_download_response(filename: str, t: Task, ext='.mp3', end_task=True):
 
 def resume_yt_files_downloading_sync(playlist: list, task_id=None, dir=None, quality=192, repair_tags=False,
                                      first_part_index=0, part_size=None):
+    """Resume youtube files downloading
+
+
+    :param task_id: id of task object which describe this process or None
+    :type task_id: int or None
+    :param playlist: list of youtube video ids represented as strings
+    :type playlist: list
+    :param dir: path to directory where should be downloaded file,
+                if not specified or None, using temp directory in where placed this .py file
+    :type dir: str
+    :param quality: quality that needs to be converted
+    :type quality: int
+    :param repair_tags: define use repair tags functions or not(see tasks/tags.py to more info)
+    :type repair_tags: bool
+    :param first_part_index: last successfully downloaded part number
+    :type first_part_index: int
+    :param part_size: size of part archive(in files number)
+    :type part_size: int
+    """
     app = create_app()
     app_context = app.app_context()
     app_context.push()
 
     task = Task.query.get(task_id)
-    part_size = part_size
     dir = dir or os.path.dirname(os.path.realpath(__file__)) + os.path.sep + 'temp'
     dir += os.path.sep + f'Task{task_id}'
     arcpath = (dir + os.path.sep + 'playlist.zip' or 'playlist.zip')
@@ -481,11 +550,32 @@ if Config.USE_CELERY:
 
 def resume_yt_files_downloading(playlist: list, task=None, dir=None, quality=192, repair_tags=False,
                                 first_part_index=0, part_size=None):
+    """Wrapper to the 'resume_yt_files_downloading_sync' function
+       Depending on configuration can run 'download_yt_files_sync' directly in the 'main' thread,
+       in child thread or as celery task
+
+
+    :param task: task object which describe this process or None
+    :type task: Task or None
+    :param playlist: list of youtube video ids represented as strings
+    :type playlist: list
+    :param dir: path to directory where should be downloaded file,
+                if not specified or None, using temp directory in where placed this .py file
+    :type dir: str
+    :param quality: quality that needs to be converted
+    :type quality: int
+    :param repair_tags: define use repair tags functions or not(see tasks/tags.py to more info)
+    :type repair_tags: bool
+    :param first_part_index: last successfully downloaded part number
+    :type first_part_index: int
+    :param part_size: size of part archive(in files number)
+    :type part_size: int
+    """
     if current_app.config['DOWNLOAD_PATH']:
         dir = current_app.config['DOWNLOAD_PATH']
     if current_app.config['SYNC_DOWNLOADINGS']:
         resume_yt_files_downloading_sync(playlist, task_id=task.id, quality=quality, dir=dir, repair_tags=repair_tags,
-                                         first_part_index=0, part_size=None)
+                                         first_part_index=0, part_size=part_size)
     elif current_app.config['USE_CELERY']:
         resume_yt_files_downloading_async.apply_async(args=[playlist],
                                                       kwargs={'task_id': task.id, 'quality': quality, 'dir': dir,

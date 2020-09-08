@@ -11,6 +11,21 @@ if Config.USE_CELERY:
 
 
 def create_mail(subject, sender, recipients, text_body, html_body):
+    """Create message object
+
+    :param subject: email subject
+    :type subject: str
+    :param sender: email sender
+    :type sender: str
+    :param recipients: email recipients
+    :type recipients: list
+    :param text_body: email text_body
+    :type text_body: Flask template
+    :param html_body: email html_body
+    :type html_body: Flask template
+
+    :returns: Flask-mail message object
+    """
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = text_body
     msg.html = html_body
@@ -27,6 +42,19 @@ if Config.USE_CELERY:
 
 
 def send_mail_sync(subject, sender, recipients, text_body, html_body):
+    """Create message and send it
+
+    :param subject: email subject
+    :type subject: str
+    :param sender: email sender
+    :type sender: str
+    :param recipients: email recipients
+    :type recipients: list
+    :param text_body: email text_body
+    :type text_body: Flask template
+    :param html_body: email html_body
+    :type html_body: Flask template
+    """
     app = create_app()
     with app.app_context():
         msg = create_mail(subject, sender, recipients, text_body, html_body)
@@ -34,6 +62,21 @@ def send_mail_sync(subject, sender, recipients, text_body, html_body):
 
 
 def send_email(subject, sender, recipients, text_body, html_body, sync=False):
+    """Depending on configuration send email in main thread, child thread or as celery task
+
+    :param subject: email subject
+    :type subject: str
+    :param sender: email sender
+    :type sender: str
+    :param recipients: email recipients
+    :type recipients: list
+    :param text_body: email text_body
+    :type text_body: Flask template
+    :param html_body: email html_body
+    :type html_body: Flask template
+    :param sync: send mail in sync mode
+    :type sync: bool
+    """
     if not current_app.config['SEND_MAILS']:
         return
     if sync:
@@ -49,6 +92,16 @@ def send_email(subject, sender, recipients, text_body, html_body, sync=False):
 
 
 def send_confirmation_email(user, action, pattern):
+    """Create confirmation message and send it
+
+    :param user: user object which should receive mail
+    :type user: User
+    :param action: string describing of action which will be injected into mail header
+    :type action: str
+    :param pattern: path to template, notice that extension should not be included,
+                    and also you need template as txt and html file
+    :type pattern: str
+    """
     token = user.get_confirmation_token()
     send_email(f'[DFY] {action}',
                sender=current_app.config['ADMINS'][0],
@@ -62,6 +115,18 @@ def send_confirmation_email(user, action, pattern):
 
 
 def send_file_ready_email(user, action, pattern, errors_list):
+    """Create 'file ready' message and send it
+
+    :param user: user object which should receive mail
+    :type user: User
+    :param action: string describing of action which will be injected into mail header
+    :type action: str
+    :param pattern: path to template, notice that extension should not be included,
+                    and also you need template as txt and html file
+    :type pattern: str
+    :param errors_list: list of ids of files that was failed to download
+    :type errors_list: list
+    """
     send_email(f'[DFY] {action}',
                sender=current_app.config['ADMINS'][0],
                recipients=[user.email],
@@ -73,6 +138,16 @@ def send_file_ready_email(user, action, pattern, errors_list):
 
 
 def send_file_fail_email(user, action, pattern):
+    """Create 'file fail' message and send it
+
+    :param user: user object which should receive mail
+    :type user: User
+    :param action: string describing of action which will be injected into mail header
+    :type action: str
+    :param pattern: path to template, notice that extension should not be included,
+                    and also you need template as txt and html file
+    :type pattern: str
+    """
     send_email(f'[DFY] {action}',
                sender=current_app.config['ADMINS'][0],
                recipients=[user.email],
