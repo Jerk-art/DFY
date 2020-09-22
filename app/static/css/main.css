@@ -163,7 +163,7 @@ label .error{
 	margin: 0px;
 }
 
-.chose_holder .col-sm-2{
+.chose_holder .col-xs-2{
 	padding-left: 0px;
 }
 
@@ -398,4 +398,178 @@ label .error{
 .forgot-password{
 	text-align: center;
 	margin-top: 18px;
+}
+
+
+@media (max-width: 576px) {
+	.chose_holder{
+		width: 40%;
+		margin-left: 6%
+	}
+
+	.repair_tags{
+		width: 40%;
+		margin-left: 7%
+	}
+
+	.repair_tags .col-sm-9{
+		width: 55%;
+	}
+
+	.repair_tags .col-sm-2{
+		width: 40%;
+		margin-left: 5%
+	}
+
+	.side-info{
+		width: 70%;
+	}
+
+	.side-info-line{
+		height: 78px;
+	}
+
+	.height-100{
+		height: 100px;
+	}
+}
+
+@media (min-width: 0px) {
+	.index1-label{
+		margin-left: 4%;
+		margin-top: 2px;
+		margin-bottom: 2px;
+	}
+
+	.index2{
+		text-align: center;
+		margin-left: 8%;
+	}
+}
+
+@media (min-width: 400px) {
+	.index1-label{
+		margin-left: 8%;
+		margin-top: 2px;
+		margin-bottom: 2px;
+	}
+
+	.index2{
+		text-align: center;
+		margin-left: 6%;
+	}
+}
+
+@media (min-width: 430px) {
+	.index2{
+		text-align: center;
+		margin-left: 8%;
+	}
+}
+
+@media (min-width: 450px) {
+	.index2{
+		text-align: center;
+		margin-left: 12%;
+	}
+}
+
+@media (min-width: 470px) {
+	.index2{
+		text-align: center;
+		margin-left: 15%;
+	}
+}
+
+@media (min-width: 500px) {
+	.index2{
+		text-align: center;
+		margin-left: 17%;
+	}
+}
+
+@media (min-width: 530px) {
+	.index2{
+		text-align: center;
+		margin-left: 23%;
+	}
+}
+
+@media (min-width: 540px) {
+	.index2{
+		text-align: center;
+		margin-left: 25%;
+	}
+}
+
+@media (min-width: 576px) {
+	.index1-label{
+		margin-left: 39px;
+		margin-top: 2px;
+		margin-bottom: 2px;
+	}
+
+	.index2{
+		text-align: center;
+		margin-left: 140px;
+	}
+}
+
+@media (min-width: 768px) {
+	.index1-label{
+		margin-left: 39px;
+		margin-top: 2px;
+		margin-bottom: 2px;
+	}
+
+	.index2{
+		text-align: center;
+		margin-left: 198px;
+	}
+
+	.cover_image{
+		width: 240px;
+		padding-top: 120px;
+	}
+
+	.cover_image2{
+		width: 160px;
+		padding-top: 120px;
+	}
+}
+
+@media (min-width: 992px) {
+	.index1-label{
+		margin-left: 39px;
+		margin-top: 2px;
+		margin-bottom: 2px;
+	}
+
+	.index2{
+		text-align: center;
+		margin-left: 132px;
+	}
+
+	.cover_image{
+		width: 280px;
+		padding-top: 80px;
+	}
+
+	.cover_image2{
+		width: 200px;
+		padding-top: 80px;
+	}
+}
+
+@media (min-width: 1200px) {
+	.index1-label{
+		margin-left: 39px;
+		margin-top: 2px;
+		margin-bottom: 2px;
+	}
+
+	.index2{
+		text-align: center;
+		margin-left: 74px;
+	}
 }

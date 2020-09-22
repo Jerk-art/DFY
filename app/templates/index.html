@@ -18,7 +18,7 @@
 								{% else %}
 									<div class="carousel-caption d-none d-md-block">
 								{% endif %}
-									<img src="{{ url_for('static', filename='img/youtube.png') }}" width="360px">
+									<img class="cover_image" src="{{ url_for('static', filename='img/youtube.png') }}" width="360px">
 
 									<form action="download_yt" id="dfyt" method="post" enctype="multipart/form-data" novalidate>
 										{{ youtube_form.hidden_tag() }}
@@ -44,15 +44,15 @@
 
 											{% if current_user.is_authenticated %}
 												<div class="row">
-													<div class="col-sm-6 offset-sm-3 settings">
+													<div class="col-lg-8 offset-lg-2 col-xl-6 offset-xl-3 settings">
 														<div class="row">
-															<div class="col-sm-6">
+															<div class="col-md-4 offset-md-2 col-lg-6 offset-lg-0">
 																<div class="chose_holder" id="chose_holder1">
 																	{{ youtube_form.quality.label }}
 																	{{ youtube_form.quality(class_="quality_chose") }}
 																</div>
 															</div>
-															<div class="col-sm-6">
+															<div class="col-md-4 col-lg-6">
 																<div class="chose_holder repair_tags" id="chose_holder2">
 																	<div class="row">
 																		<div class="col-sm-9">
@@ -86,7 +86,7 @@
 								{% else %}
 									<div class="carousel-caption d-none d-md-block">
 								{% endif %}
-									<img src="{{ url_for('static', filename='img/soundcloud.png') }}" width="280px" style="margin-bottom: 40px; margin-top: 40px">
+									<img class="cover_image2" src="{{ url_for('static', filename='img/soundcloud.png') }}" width="280px" style="margin-bottom: 40px; margin-top: 40px">
 
 									<form action="download_sc" id="dfsc" method="post" enctype="multipart/form-data" novalidate>
 										{{ soundcloud_form.hidden_tag() }}
@@ -112,15 +112,15 @@
 
 											{% if current_user.is_authenticated %}
 												<div class="row">
-													<div class="col-sm-6 offset-sm-3 settings">
+													<div class="col-lg-8 offset-lg-2 col-xl-6 offset-xl-3 settings">
 														<div class="row">
-															<div class="col-sm-6">
+															<div class="col-md-4 offset-md-2 col-lg-6 offset-lg-0">
 																<div class="chose_holder chose_holder3" id="chose_holder3">
 																	{{ soundcloud_form.quality.label }}
 																	{{ soundcloud_form.quality(class_="quality_chose") }}
 																</div>
 															</div>
-															<div class="col-sm-6">
+															<div class="col-md-4 col-lg-6">
 																<div class="chose_holder repair_tags" id="chose_holder4">
 																	<div class="row">
 																		<div class="col-sm-9">
