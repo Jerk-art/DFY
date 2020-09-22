@@ -325,7 +325,11 @@ def download_yt_files(playlist: list, task=None, dir=None, quality=192, repair_t
               'part_size': part_size}
 
     if not os.path.isdir(dir):
-        os.mkdir(os.path.realpath(dir))
+        try:
+            os.mkdir(os.path.realpath(dir))
+        except FileNotFoundError:
+            os.mkdir(os.path.realpath(dir[:dir.rfind(os.path.sep)]))
+            os.mkdir(os.path.realpath(dir))
 
     if task:
         dir += os.path.sep + f'Task{task.id}'
