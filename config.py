@@ -31,7 +31,7 @@ class Config:
     ASYNC_TASKS = True
     SYNC_DOWNLOADINGS = False
 
-    ADMINS = ['jerkinston@gmail.com']
+    ADMINS = ['ne.ne@ne.com']
     SEND_MAILS = True
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = os.environ.get('MAIL_PORT')

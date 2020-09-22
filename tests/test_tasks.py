@@ -126,15 +126,6 @@ def test_get_yt_playlist_items(client):
     assert playlist[0] == 'XkCA2XqUJ4o'
     assert playlist[13] == 'uX3Gw82f6GU'
 
-    playlist = get_yt_playlist_items('https://www.youtube.com/playlist?list=PL6Lt9p1lIRZ311J9ZHuzkR5A3xesae2pk', 50, 51)
-    assert len(playlist) == 1
-    assert playlist[0] == 'O-fyNgHdmLI'
-
-    playlist = get_yt_playlist_items('https://www.youtube.com/playlist?list=PL6Lt9p1lIRZ311J9ZHuzkR5A3xesae2pk', 69, 131)
-    assert len(playlist) == 62
-    assert playlist[0] == '8IEQpfA528M'
-    assert playlist[61] == 'Y6ljFaKRTrI'
-
 
 # Testing download module
 
@@ -225,7 +216,7 @@ def test_get_repaired_tags_from_itunes(client):
     tags = get_repaired_tags_from_itunes('Epica', 'Design Your Universe')
     assert tags['album'] == 'Design Your Universe'
     assert 'Design Your Universe' in tags['title']
-    assert tags['number'] == 19
+    assert tags['number'] == 13
 
 
 def test_get_repaired_tags_for_yt(client):
