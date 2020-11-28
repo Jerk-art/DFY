@@ -17,7 +17,19 @@ flask db upgrade
 ```
 
 ### Variables configurating
-Before start you should set some variables in .env file or directly in config.py
+Before start you should create .env file and set some variables in it or set them directly in config.py
+
+Filling .env example
+* SECRET_KEY='secret'
+* YOUTUBE_API_KEY=
+* MAIL_SERVER=smtp.googlemail.com
+* MAIL_PORT=587
+* MAIL_USE_TLS=1
+* MAIL_USERNAME=
+* MAIL_PASSWORD=
+* SPOTIFY_UID=
+* SPOTIFY_SECRET=
+
 
 ## config.py settings
 * ALLOWED_DURATION - max file duration time
