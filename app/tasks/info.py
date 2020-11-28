@@ -50,7 +50,7 @@ def get_yt_file_info(url: str):
     elif r.status_code == 400:
         raise ConnectionError('Bad request, please check your API key.')
     else:
-        raise ConnectionError()
+        raise ConnectionError(f'{r.status_code} - {r.json()["error"]["message"]}')
 
 
 def get_sc_file_info(url: str):
@@ -127,7 +127,7 @@ def get_yt_playlist_info(pid, max_results=0, page_token=None):
     elif r.status_code == 404:
         raise BadUrlError('Playlist not found.')
     else:
-        raise ConnectionError()
+        raise ConnectionError(f'{r.status_code} - {r.json()["error"]["message"]}')
 
 
 def get_yt_playlist_items(link: str, start_index: int, end_index: int):
